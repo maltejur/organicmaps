@@ -7350,35 +7350,39 @@
     zh-Hans = 公路要素
 
   [type.highway.bridleway]
-    en = highway-bridleway
+    en = Rider's road
     ja = 馬道
     pl = Droga dla koni
     pt = Caminho para cavaleiros
     pt-BR = Caminho para cavaleiros
+    ru = Дорога для всадников
     zh-Hans = 马道
 
   [type.highway.bridleway.bridge]
-    en = highway-bridleway-bridge
+    en = Rider's road
     ja = 馬道(橋)
     pl = Most drogowy dla koni
     pt = Caminho para cavaleiros
     pt-BR = Caminho para cavaleiros
+    ru = Дорога для всадников
     zh-Hans = 马道
 
   [type.highway.bridleway.permissive]
-    en = highway-bridleway-permissive
+    en = Rider's road
     ja = 馬道
     pl = Droga dla koni ograniczona
     pt = Caminho para cavaleiros
     pt-BR = Caminho para cavaleiros
+    ru = Дорога для всадников
     zh-Hans = 马道
 
   [type.highway.bridleway.tunnel]
-    en = highway-bridleway-tunnel
+    en = Rider's road
     ja = 馬道(トンネル)
     pl = Tunel drogowy dla koni
     pt = Caminho para cavaleiros
     pt-BR = Caminho para cavaleiros
+    ru = Дорога для всадников
     zh-Hans = 马道
 
   [type.highway.bus_stop]
@@ -7448,36 +7452,44 @@
     zh-Hant = 在建道路
 
   [type.highway.cycleway]
-    en = highway-cycleway
+    en = Bike path
     ja = 自転車道
     pl = Droga rowerowa
     pt = Ciclovia
     pt-BR = Ciclovia
+    ru = Велодорожка
     zh-Hans = 自行车道
 
   [type.highway.cycleway.bridge]
-    en = highway-cycleway-bridge
+    en = Bike path
     ja = 自転車道(橋)
     pl = Most drogowy dla rowerów
     pt = Ciclovia
     pt-BR = Ciclovia
+    ru = Велодорожка
     zh-Hans = 自行车道
 
   [type.highway.cycleway.permissive]
-    en = highway-cycleway-permissive
+    en = Bike path
     ja = 自転車道
     pl = Droga rowerowa ograniczona
     pt = Ciclovia
     pt-BR = Ciclovia
+    ru = Велодорожка
     zh-Hans = 自行车道
 
   [type.highway.cycleway.tunnel]
-    en = highway-cycleway-tunnel
+    en = Bike path
     ja = 自転車道(トンネル)
     pl = Tunel drogowy dla rowerów
     pt = Ciclovia
     pt-BR = Ciclovia
+    ru = Велодорожка
     zh-Hans = 自行车道
+
+  [type.highway.elevator]
+    en = Elevator
+    ru = Лифт
 
   [type.highway.footway]
     en = Path
@@ -14927,6 +14939,7 @@
     pl = Transport publiczny
     pt = Transporte público
     pt-BR = Transporte público
+    ru = Общественный транспорт
     zh-Hans = 公共交通要素
 
   [type.public_transport.platform]
@@ -14935,6 +14948,7 @@
     pl = Przystanek transportu publicznego
     pt = Plataforma de transporte público
     pt-BR = Plataforma de transporte público
+    ru = Платформа
     zh-Hans = 公共交通站台
 
   [type.railway]
@@ -14991,6 +15005,7 @@
     ja = ケーブルカー
     pt = Funicular
     pt-BR = Funicular
+    ru = Фуникулер
     zh-Hans = 缆索铁路轨道
 
   [type.railway.funicular.bridge]
@@ -14998,6 +15013,7 @@
     ja = ケーブルカー(橋)
     pt = Funicular
     pt-BR = Funicular
+    ru = Фуникулер
     zh-Hans = 缆索铁路轨道
 
   [type.railway.funicular.tunnel]
@@ -15005,6 +15021,7 @@
     ja = ケーブルカー(トンネル)
     pt = Funicular
     pt-BR = Funicular
+    ru = Фуникулер
     zh-Hans = 缆索铁路轨道
 
   [type.railway.halt]
@@ -15087,6 +15104,7 @@
     ja = ライトレール
     pt = Metropolitano de superfície
     pt-BR = Metrô de superfície
+    ru = Скоростной трамвай
     zh-Hans = 轻轨轨道
 
   [type.railway.light_rail.bridge]
@@ -15094,6 +15112,7 @@
     ja = ライトレール(橋)
     pt = Metropolitano de superfície
     pt-BR = Metrô de superfície
+    ru = Скоростной трамвай
     zh-Hans = 轻轨轨道
 
   [type.railway.light_rail.tunnel]
@@ -15101,6 +15120,7 @@
     ja = ライトレール(トンネル)
     pt = Metropolitano de superfície
     pt-BR = Metrô de superfície
+    ru = Скоростной трамвай
     zh-Hans = 轻轨轨道
 
   [type.railway.monorail]
@@ -16181,26 +16201,29 @@
     zh-Hant = 地鐵入口
 
   [type.railway.tram]
-    en = railway-tram
+    en = Tram line
     ja = トラム
     pt = Linha de elétrico
     pt-BR = Linha de bonde
+    ru = Трамвай
     zh-Hans = 电车轨道
     zh-Hant = 電車軌道
 
   [type.railway.tram.bridge]
-    en = railway-tram-bridge
+    en = Tram line
     ja = トラム(橋)
     pt = Linha de elétrico
     pt-BR = Linha de bonde
+    ru = Трамвай
     zh-Hans = 电车轨道
     zh-Hant = 電車軌道
 
   [type.railway.tram.tunnel]
-    en = railway-tram-tunnel
+    en = Tram line
     ja = トラム(トンネル)
     pt = Linha de elétrico
     pt-BR = Linha de bonde
+    ru = Трамвай
     zh-Hans = 电车轨道
     zh-Hant = 電車軌道
 
@@ -16226,7 +16249,7 @@
     pt = Paragem de elétrico
     pt-BR = Parada de bonde
     ro = Stație de tramvai
-    ru = Остановка
+    ru = Остановка трамвая
     sk = Električková zastávka
     sv = Spårvagnshållplats
     th = ป้ายรถราง
