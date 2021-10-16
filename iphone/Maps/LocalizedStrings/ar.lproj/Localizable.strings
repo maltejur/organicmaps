@@ -1481,17 +1481,17 @@
 
 /********** Types **********/
 
-"type.aerialway" = "aerialway";
+"type.aerialway" = "Aerialway";
 
-"type.aerialway.cable_car" = "aerialway-cable_car";
+"type.aerialway.cable_car" = "Aerialway";
 
-"type.aerialway.chair_lift" = "aerialway-chair_lift";
+"type.aerialway.chair_lift" = "Aerialway";
 
-"type.aerialway.drag_lift" = "aerialway-drag_lift";
+"type.aerialway.drag_lift" = "Aerialway";
 
-"type.aerialway.gondola" = "aerialway-gondola";
+"type.aerialway.gondola" = "Aerialway";
 
-"type.aerialway.mixed_lift" = "aerialway-mixed_lift";
+"type.aerialway.mixed_lift" = "Aerialway";
 
 "type.aerialway.station" = "محطة تلفريك";
 
@@ -1503,7 +1503,7 @@
 
 "type.aeroway.apron" = "aeroway-apron";
 
-"type.aeroway.gate" = "aeroway-gate";
+"type.aeroway.gate" = "Gate";
 
 "type.aeroway.helipad" = "مهبط مروحيات";
 
@@ -1511,7 +1511,7 @@
 
 "type.aeroway.taxiway" = "aeroway-taxiway";
 
-"type.aeroway.terminal" = "aeroway-terminal";
+"type.aeroway.terminal" = "Terminal";
 
 "type.amenity" = "أثر";
 
@@ -1571,7 +1571,7 @@
 
 "type.amenity.driving_school" = "مدرسة قيادة";
 
-"type.amenity.embassy" = "سفارة";
+"type.office.diplomatic" = "سفارة";
 
 "type.amenity.fast_food" = "وجبات سريعة";
 
@@ -2015,27 +2015,31 @@
 
 "type.entrance" = "مدخل";
 
+"type.healthcare.laboratory" = "ﺔﻴﺒﻄﻟﺍ ﺕﺍﺮﺒﺘﺨﻤﻟﺍ";
+
 "type.highway" = "highway";
 
-"type.highway.bridleway" = "highway-bridleway";
+"type.highway.bridleway" = "Rider's road";
 
-"type.highway.bridleway.bridge" = "highway-bridleway-bridge";
+"type.highway.bridleway.bridge" = "Rider's road";
 
-"type.highway.bridleway.permissive" = "highway-bridleway-permissive";
+"type.highway.bridleway.permissive" = "Rider's road";
 
-"type.highway.bridleway.tunnel" = "highway-bridleway-tunnel";
+"type.highway.bridleway.tunnel" = "Rider's road";
 
 "type.highway.bus_stop" = "موقف حافلة";
 
 "type.highway.construction" = "طريق تحت الإنشاء";
 
-"type.highway.cycleway" = "highway-cycleway";
+"type.highway.cycleway" = "Bike path";
 
-"type.highway.cycleway.bridge" = "highway-cycleway-bridge";
+"type.highway.cycleway.bridge" = "Bike path";
 
-"type.highway.cycleway.permissive" = "highway-cycleway-permissive";
+"type.highway.cycleway.permissive" = "Bike path";
 
-"type.highway.cycleway.tunnel" = "highway-cycleway-tunnel";
+"type.highway.cycleway.tunnel" = "Bike path";
+
+"type.highway.elevator" = "Elevator";
 
 "type.highway.footway" = "مسار";
 
@@ -2265,8 +2269,6 @@
 
 "type.historic.monument" = "صرح";
 
-"type.historic.museum" = "historic-museum";
-
 "type.historic.ruins" = "آثار";
 
 "type.historic.ship" = "سياحة";
@@ -2349,9 +2351,9 @@
 
 "type.landuse.grass" = "حديقة";
 
-"type.landuse.greenfield" = "landuse-greenfield";
+"type.landuse.greenfield" = "Greenfield";
 
-"type.landuse.greenhouse_horticulture" = "landuse-greenhouse_horticulture";
+"type.landuse.greenhouse_horticulture" = "Greenhouse";
 
 "type.landuse.industrial" = "Industrial land";
 
@@ -2367,17 +2369,17 @@
 
 "type.landuse.railway" = "محطة خط سكة حديد";
 
-"type.landuse.recreation_ground" = "landuse-recreation_ground";
+"type.landuse.recreation_ground" = "Recreation ground";
 
 "type.landuse.reservoir" = "مياه";
 
-"type.landuse.residential" = "landuse-residential";
+"type.landuse.residential" = "Residential land";
 
-"type.landuse.retail" = "landuse-retail";
+"type.landuse.retail" = "Retail land";
 
-"type.landuse.salt_pond" = "landuse-salt_pond";
+"type.landuse.salt_pond" = "Salt pond";
 
-"type.landuse.village_green" = "landuse-village_green";
+"type.landuse.village_green" = "Green land";
 
 "type.landuse.vineyard" = "Vineyard";
 
@@ -2421,7 +2423,7 @@
 
 "type.leisure.sauna" = "ساونا";
 
-"type.leisure.slipway" = "leisure-slipway";
+"type.leisure.slipway" = "Slipway";
 
 "type.leisure.sports_centre" = "رياضة";
 
@@ -2437,33 +2439,33 @@
 
 "type.leisure.swimming_pool" = "حوض سباحة";
 
-"type.leisure.track" = "leisure-track";
+"type.leisure.track" = "Track";
 
 "type.leisure.water_park" = "ملاهي مائية";
 
 "type.man_made" = "man_made";
 
-"type.man_made.breakwater" = "man_made-breakwater";
+"type.man_made.breakwater" = "Breakwater";
 
-"type.man_made.cairn" = "man_made-cairn";
+"type.man_made.cairn" = "Cairn";
 
 "type.man_made.chimney" = "مدخنة مصنع";
 
-"type.man_made.cutline" = "man_made-cutline";
+"type.man_made.cutline" = "Cutline";
 
 "type.man_made.lighthouse" = "منارة";
 
-"type.man_made.pier" = "man_made-pier";
+"type.man_made.pier" = "Pier";
 
-"type.man_made.pipeline" = "man_made-pipeline";
+"type.man_made.pipeline" = "Pipeline";
 
-"type.man_made.pipeline.overground" = "man_made-pipeline-overground";
+"type.man_made.pipeline.overground" = "Overground pipeline";
 
 "type.man_made.surveillance" = "كاميرا مراقبة";
 
 "type.man_made.tower" = "برج";
 
-"type.man_made.wastewater_plant" = "man_made-wastewater_plant";
+"type.man_made.wastewater_plant" = "Wastewater plant";
 
 "type.man_made.water_tap" = "حنفية مياه";
 
@@ -2473,17 +2475,17 @@
 
 "type.man_made.windmill" = "طاحونة هواء";
 
-"type.man_made.works" = "man_made-works";
+"type.man_made.works" = "Works";
 
 "type.mapswithme" = "mapswithme";
 
 "type.mapswithme.grid" = "mapswithme-grid";
 
-"type.military" = "military";
+"type.military" = "Military";
 
 "type.military.bunker" = "مأوى";
 
-"type.natural" = "natural";
+"type.natural" = "Natural";
 
 "type.natural.bare_rock" = "Bare rock";
 
@@ -2511,7 +2513,7 @@
 
 "type.natural.lake" = "بحيرة";
 
-"type.natural.land" = "natural-land";
+"type.natural.land" = "Land";
 
 "type.natural.meadow" = "Meadow";
 
@@ -2637,7 +2639,7 @@
 
 "type.place.islet" = "جزيرة";
 
-"type.place.isolated_dwelling" = "place-isolated_dwelling";
+"type.place.isolated_dwelling" = "Dwelling";
 
 "type.place.locality" = "منطقة مجاورة";
 
@@ -2649,7 +2651,7 @@
 
 "type.place.sea" = "يكون";
 
-"type.place.square" = "place-square";
+"type.place.square" = "Square";
 
 "type.place.state" = "محافظة";
 
@@ -2663,17 +2665,17 @@
 
 "type.power" = "power";
 
-"type.power.generator" = "power-generator";
+"type.power.generator" = "Power generator";
 
-"type.power.line" = "power-line";
+"type.power.line" = "Power line";
 
-"type.power.line.underground" = "power-line-underground";
+"type.power.line.underground" = "Underground power line";
 
-"type.power.minor_line" = "power-minor_line";
+"type.power.minor_line" = "Minor power line";
 
 "type.power.pole" = "عمود كهرباء";
 
-"type.power.station" = "power-station";
+"type.power.station" = "Power station";
 
 "type.power.substation" = "محطة كهرباء فرعية";
 
@@ -2689,87 +2691,87 @@
 
 "type.psurface.unpaved_good" = "psurface-unpaved_good";
 
-"type.public_transport" = "public_transport";
+"type.public_transport" = "Public transport";
 
-"type.public_transport.platform" = "public_transport-platform";
+"type.public_transport.platform" = "Platform";
 
-"type.railway" = "railway";
+"type.railway" = "Railway";
 
-"type.railway.abandoned" = "railway-abandoned";
+"type.railway.abandoned" = "Abandoned railway";
 
-"type.railway.abandoned.bridge" = "railway-abandoned-bridge";
+"type.railway.abandoned.bridge" = "Abandoned railway";
 
-"type.railway.abandoned.tunnel" = "railway-abandoned-tunnel";
+"type.railway.abandoned.tunnel" = "Abandoned railway";
 
-"type.railway.construction" = "railway-construction";
+"type.railway.construction" = "Railway's construction";
 
-"type.railway.crossing" = "railway-crossing";
+"type.railway.crossing" = "Railway crossing";
 
-"type.railway.disused" = "railway-disused";
+"type.railway.disused" = "Disused railway";
 
-"type.railway.funicular" = "railway-funicular";
+"type.railway.funicular" = "Funicular";
 
-"type.railway.funicular.bridge" = "railway-funicular-bridge";
+"type.railway.funicular.bridge" = "Funicular";
 
-"type.railway.funicular.tunnel" = "railway-funicular-tunnel";
+"type.railway.funicular.tunnel" = "Funicular";
 
 "type.railway.halt" = "محطة سكك حديدية";
 
-"type.railway.incline" = "railway-incline";
+"type.railway.incline" = "Railway incline";
 
-"type.railway.incline.bridge" = "railway-incline-bridge";
+"type.railway.incline.bridge" = "Railway incline";
 
-"type.railway.incline.tunnel" = "railway-incline-tunnel";
+"type.railway.incline.tunnel" = "Railway incline";
 
 "type.railway.level_crossing" = "مزلقان";
 
-"type.railway.light_rail" = "railway-light_rail";
+"type.railway.light_rail" = "Light rail";
 
-"type.railway.light_rail.bridge" = "railway-light_rail-bridge";
+"type.railway.light_rail.bridge" = "Light rail";
 
-"type.railway.light_rail.tunnel" = "railway-light_rail-tunnel";
+"type.railway.light_rail.tunnel" = "Light rail";
 
 "type.railway.monorail" = "اتجاه واحد";
 
-"type.railway.monorail.bridge" = "railway-monorail-bridge";
+"type.railway.monorail.bridge" = "Monorail";
 
-"type.railway.monorail.tunnel" = "railway-monorail-tunnel";
+"type.railway.monorail.tunnel" = "Monorail";
 
-"type.railway.narrow_gauge" = "railway-narrow_gauge";
+"type.railway.narrow_gauge" = "Narrow gauge railway";
 
-"type.railway.narrow_gauge.bridge" = "railway-narrow_gauge-bridge";
+"type.railway.narrow_gauge.bridge" = "Narrow gauge railway";
 
-"type.railway.narrow_gauge.tunnel" = "railway-narrow_gauge-tunnel";
+"type.railway.narrow_gauge.tunnel" = "Narrow gauge railway";
 
-"type.railway.platform" = "railway-platform";
+"type.railway.platform" = "Platform";
 
-"type.railway.preserved" = "railway-preserved";
+"type.railway.preserved" = "Preserved railway";
 
-"type.railway.preserved.bridge" = "railway-preserved-bridge";
+"type.railway.preserved.bridge" = "Preserved railway";
 
-"type.railway.preserved.tunnel" = "railway-preserved-tunnel";
+"type.railway.preserved.tunnel" = "Preserved railway";
 
 "type.railway.rail" = "خط سكة حديد";
 
-"type.railway.rail.bridge" = "railway-rail-bridge";
+"type.railway.rail.bridge" = "Railway";
 
-"type.railway.rail.motor_vehicle" = "railway-rail-motor_vehicle";
+"type.railway.rail.motor_vehicle" = "Railway";
 
-"type.railway.rail.tunnel" = "railway-rail-tunnel";
+"type.railway.rail.tunnel" = "Railway";
 
-"type.railway.razed" = "railway-razed";
+"type.railway.razed" = "Razed railway";
 
-"type.railway.siding" = "railway-siding";
+"type.railway.siding" = "Siding";
 
-"type.railway.siding.bridge" = "railway-siding-bridge";
+"type.railway.siding.bridge" = "Siding";
 
-"type.railway.siding.tunnel" = "railway-siding-tunnel";
+"type.railway.siding.tunnel" = "Siding";
 
-"type.railway.spur" = "railway-spur";
+"type.railway.spur" = "Spur";
 
-"type.railway.spur.bridge" = "railway-spur-bridge";
+"type.railway.spur.bridge" = "Spur";
 
-"type.railway.spur.tunnel" = "railway-spur-tunnel";
+"type.railway.spur.tunnel" = "Spur";
 
 "type.railway.station" = "محطة سكك حديدية";
 
@@ -2783,23 +2785,7 @@
 
 "type.railway.station.subway.berlin" = "محطة مترو";
 
-"type.railway.station.subway.blue" = "محطة مترو";
-
-"type.railway.station.subway.brown" = "محطة مترو";
-
-"type.railway.station.subway.darkgreen" = "محطة مترو";
-
-"type.railway.station.subway.gray" = "محطة مترو";
-
-"type.railway.station.subway.green" = "محطة مترو";
-
-"type.railway.station.subway.grey" = "محطة مترو";
-
 "type.railway.station.subway.kiev" = "محطة مترو";
-
-"type.railway.station.subway.lightblue" = "محطة مترو";
-
-"type.railway.station.subway.lightgreen" = "محطة مترو";
 
 "type.railway.station.subway.london" = "محطة مترو";
 
@@ -2811,53 +2797,17 @@
 
 "type.railway.station.subway.newyork" = "محطة مترو";
 
-"type.railway.station.subway.orange" = "محطة مترو";
-
 "type.railway.station.subway.paris" = "محطة مترو";
-
-"type.railway.station.subway.purple" = "محطة مترو";
-
-"type.railway.station.subway.red" = "محطة مترو";
 
 "type.railway.station.subway.roma" = "محطة مترو";
 
 "type.railway.station.subway.spb" = "محطة مترو";
 
-"type.railway.station.subway.violet" = "محطة مترو";
+"type.railway.subway" = "Subway line";
 
-"type.railway.station.subway.yellow" = "محطة مترو";
+"type.railway.subway.bridge" = "Subway line";
 
-"type.railway.subway" = "railway-subway";
-
-"type.railway.subway.blue" = "railway-subway-blue";
-
-"type.railway.subway.bridge" = "railway-subway-bridge";
-
-"type.railway.subway.brown" = "railway-subway-brown";
-
-"type.railway.subway.darkgreen" = "railway-subway-darkgreen";
-
-"type.railway.subway.gray" = "railway-subway-gray";
-
-"type.railway.subway.green" = "railway-subway-green";
-
-"type.railway.subway.grey" = "railway-subway-grey";
-
-"type.railway.subway.lightblue" = "railway-subway-lightblue";
-
-"type.railway.subway.lightgreen" = "railway-subway-lightgreen";
-
-"type.railway.subway.orange" = "railway-subway-orange";
-
-"type.railway.subway.purple" = "railway-subway-purple";
-
-"type.railway.subway.red" = "railway-subway-red";
-
-"type.railway.subway.tunnel" = "railway-subway-tunnel";
-
-"type.railway.subway.violet" = "railway-subway-violet";
-
-"type.railway.subway.yellow" = "railway-subway-yellow";
+"type.railway.subway.tunnel" = "Subway line";
 
 "type.railway.subway_entrance" = "مدخل المترو";
 
@@ -2883,29 +2833,25 @@
 
 "type.railway.subway_entrance.spb" = "محطة مترو";
 
-"type.railway.tram" = "railway-tram";
+"type.railway.tram" = "Tram line";
 
-"type.railway.tram.bridge" = "railway-tram-bridge";
+"type.railway.tram.bridge" = "Tram line";
 
-"type.railway.tram.tunnel" = "railway-tram-tunnel";
+"type.railway.tram.tunnel" = "Tram line";
 
 "type.railway.tram_stop" = "موقف ترام";
 
-"type.railway.yard" = "railway-yard";
+"type.railway.yard" = "Railway yard";
 
-"type.railway.yard.bridge" = "railway-yard-bridge";
+"type.railway.yard.bridge" = "Railway yard";
 
-"type.railway.yard.tunnel" = "railway-yard-tunnel";
+"type.railway.yard.tunnel" = "Railway yard";
 
 "type.route" = "route";
 
-"type.route.ferry" = "route-ferry";
+"type.route.ferry" = "Ferry";
 
-"type.route.ferry.motor_vehicle" = "route-ferry-motor_vehicle";
-
-"type.route.ferry.motorcar" = "route-ferry-motorcar";
-
-"type.route.shuttle_train" = "route-shuttle_train";
+"type.route.shuttle_train" = "Shuttle train";
 
 "type.shop" = "متجر";
 

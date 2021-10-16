@@ -1487,11 +1487,11 @@
 
 "type.aerialway.chair_lift" = "登山吊椅";
 
-"type.aerialway.drag_lift" = "aerialway-drag_lift";
+"type.aerialway.drag_lift" = "Aerialway";
 
 "type.aerialway.gondola" = "循环式索道";
 
-"type.aerialway.mixed_lift" = "aerialway-mixed_lift";
+"type.aerialway.mixed_lift" = "Aerialway";
 
 "type.aerialway.station" = "缆车车站";
 
@@ -1571,7 +1571,7 @@
 
 "type.amenity.driving_school" = "驾校";
 
-"type.amenity.embassy" = "大使馆";
+"type.office.diplomatic" = "大使馆";
 
 "type.amenity.fast_food" = "快餐店";
 
@@ -2015,6 +2015,8 @@
 
 "type.entrance" = "入口";
 
+"type.healthcare.laboratory" = "医学实验室";
+
 "type.highway" = "公路要素";
 
 "type.highway.bridleway" = "马道";
@@ -2036,6 +2038,8 @@
 "type.highway.cycleway.permissive" = "自行车道";
 
 "type.highway.cycleway.tunnel" = "自行车道";
+
+"type.highway.elevator" = "Elevator";
 
 "type.highway.footway" = "步行道路";
 
@@ -2265,8 +2269,6 @@
 
 "type.historic.monument" = "纪念堂";
 
-"type.historic.museum" = "历史博物馆";
-
 "type.historic.ruins" = "废墟";
 
 "type.historic.ship" = "历史船";
@@ -2375,9 +2377,9 @@
 
 "type.landuse.retail" = "零售用地";
 
-"type.landuse.salt_pond" = "landuse-salt_pond";
+"type.landuse.salt_pond" = "Salt pond";
 
-"type.landuse.village_green" = "landuse-village_green";
+"type.landuse.village_green" = "Green land";
 
 "type.landuse.vineyard" = "葡萄园";
 
@@ -2445,7 +2447,7 @@
 
 "type.man_made.breakwater" = "防波堤";
 
-"type.man_made.cairn" = "man_made-cairn";
+"type.man_made.cairn" = "Cairn";
 
 "type.man_made.chimney" = "工厂烟囱";
 
@@ -2511,7 +2513,7 @@
 
 "type.natural.lake" = "湖";
 
-"type.natural.land" = "natural-land";
+"type.natural.land" = "Land";
 
 "type.natural.meadow" = "Meadow";
 
@@ -2673,7 +2675,7 @@
 
 "type.power.pole" = "电线杆";
 
-"type.power.station" = "power-station";
+"type.power.station" = "Power station";
 
 "type.power.substation" = "变电站";
 
@@ -2703,7 +2705,7 @@
 
 "type.railway.construction" = "在建铁路";
 
-"type.railway.crossing" = "railway-crossing";
+"type.railway.crossing" = "Railway crossing";
 
 "type.railway.disused" = "废弃铁路";
 
@@ -2715,11 +2717,11 @@
 
 "type.railway.halt" = "小站";
 
-"type.railway.incline" = "railway-incline";
+"type.railway.incline" = "Railway incline";
 
-"type.railway.incline.bridge" = "railway-incline-bridge";
+"type.railway.incline.bridge" = "Railway incline";
 
-"type.railway.incline.tunnel" = "railway-incline-tunnel";
+"type.railway.incline.tunnel" = "Railway incline";
 
 "type.railway.level_crossing" = "铁路道口";
 
@@ -2743,11 +2745,11 @@
 
 "type.railway.platform" = "火车站台";
 
-"type.railway.preserved" = "railway-preserved";
+"type.railway.preserved" = "Preserved railway";
 
-"type.railway.preserved.bridge" = "railway-preserved-bridge";
+"type.railway.preserved.bridge" = "Preserved railway";
 
-"type.railway.preserved.tunnel" = "railway-preserved-tunnel";
+"type.railway.preserved.tunnel" = "Preserved railway";
 
 "type.railway.rail" = "铁路轨道";
 
@@ -2757,19 +2759,19 @@
 
 "type.railway.rail.tunnel" = "铁路轨道";
 
-"type.railway.razed" = "railway-razed";
+"type.railway.razed" = "Razed railway";
 
-"type.railway.siding" = "railway-siding";
+"type.railway.siding" = "Siding";
 
-"type.railway.siding.bridge" = "railway-siding-bridge";
+"type.railway.siding.bridge" = "Siding";
 
-"type.railway.siding.tunnel" = "railway-siding-tunnel";
+"type.railway.siding.tunnel" = "Siding";
 
-"type.railway.spur" = "railway-spur";
+"type.railway.spur" = "Spur";
 
-"type.railway.spur.bridge" = "railway-spur-bridge";
+"type.railway.spur.bridge" = "Spur";
 
-"type.railway.spur.tunnel" = "railway-spur-tunnel";
+"type.railway.spur.tunnel" = "Spur";
 
 "type.railway.station" = "火车站";
 
@@ -2783,23 +2785,7 @@
 
 "type.railway.station.subway.berlin" = "地铁车站";
 
-"type.railway.station.subway.blue" = "地铁车站";
-
-"type.railway.station.subway.brown" = "地铁车站";
-
-"type.railway.station.subway.darkgreen" = "地铁车站";
-
-"type.railway.station.subway.gray" = "地铁车站";
-
-"type.railway.station.subway.green" = "地铁车站";
-
-"type.railway.station.subway.grey" = "地铁车站";
-
 "type.railway.station.subway.kiev" = "地铁车站";
-
-"type.railway.station.subway.lightblue" = "地铁车站";
-
-"type.railway.station.subway.lightgreen" = "地铁车站";
 
 "type.railway.station.subway.london" = "地铁车站";
 
@@ -2811,53 +2797,17 @@
 
 "type.railway.station.subway.newyork" = "地铁车站";
 
-"type.railway.station.subway.orange" = "地铁车站";
-
 "type.railway.station.subway.paris" = "地铁车站";
-
-"type.railway.station.subway.purple" = "地铁车站";
-
-"type.railway.station.subway.red" = "地铁车站";
 
 "type.railway.station.subway.roma" = "地铁车站";
 
 "type.railway.station.subway.spb" = "地铁车站";
 
-"type.railway.station.subway.violet" = "地铁车站";
+"type.railway.subway" = "Subway line";
 
-"type.railway.station.subway.yellow" = "地铁车站";
+"type.railway.subway.bridge" = "Subway line";
 
-"type.railway.subway" = "railway-subway";
-
-"type.railway.subway.blue" = "railway-subway-blue";
-
-"type.railway.subway.bridge" = "railway-subway-bridge";
-
-"type.railway.subway.brown" = "railway-subway-brown";
-
-"type.railway.subway.darkgreen" = "railway-subway-darkgreen";
-
-"type.railway.subway.gray" = "railway-subway-gray";
-
-"type.railway.subway.green" = "railway-subway-green";
-
-"type.railway.subway.grey" = "railway-subway-grey";
-
-"type.railway.subway.lightblue" = "railway-subway-lightblue";
-
-"type.railway.subway.lightgreen" = "railway-subway-lightgreen";
-
-"type.railway.subway.orange" = "railway-subway-orange";
-
-"type.railway.subway.purple" = "railway-subway-purple";
-
-"type.railway.subway.red" = "railway-subway-red";
-
-"type.railway.subway.tunnel" = "railway-subway-tunnel";
-
-"type.railway.subway.violet" = "railway-subway-violet";
-
-"type.railway.subway.yellow" = "railway-subway-yellow";
+"type.railway.subway.tunnel" = "Subway line";
 
 "type.railway.subway_entrance" = "地铁入口";
 
@@ -2901,11 +2851,7 @@
 
 "type.route.ferry" = "航线";
 
-"type.route.ferry.motor_vehicle" = "航线";
-
-"type.route.ferry.motorcar" = "航线";
-
-"type.route.shuttle_train" = "route-shuttle_train";
+"type.route.shuttle_train" = "Shuttle train";
 
 "type.shop" = "商店";
 
