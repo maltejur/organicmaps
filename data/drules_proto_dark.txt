@@ -12526,6 +12526,33 @@ cont {
   }
 }
 cont {
+  name: "highway-elevator"
+  element {
+    scale: 17
+    symbol {
+      name: "elevator"
+      apply_for_type: 1
+      priority: 16447
+    }
+  }
+  element {
+    scale: 18
+    symbol {
+      name: "elevator"
+      apply_for_type: 1
+      priority: 16447
+    }
+  }
+  element {
+    scale: 19
+    symbol {
+      name: "elevator"
+      apply_for_type: 1
+      priority: 16447
+    }
+  }
+}
+cont {
   name: "highway-footway"
   element {
     scale: 14

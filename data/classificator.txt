@@ -314,6 +314,7 @@ world  +
             permissive  -
             tunnel  -
             {}
+        elevator  -
         footway  +
             alpine_hiking  -
             area  -

@@ -1056,7 +1056,7 @@ route|ferry
 *shop|copyshop
 *shop|photo
 *shop|travel_agency
-mapswithme
+*highway|elevator
 *shop|outdoor
 mapswithme
 mapswithme
