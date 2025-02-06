@@ -5,8 +5,6 @@
 #include "routing/route.hpp"
 #include "routing/routing_callbacks.hpp"
 
-#include "geometry/latlon.hpp"
-
 #include <algorithm>
 
 namespace guides_tests
@@ -69,9 +67,9 @@ UNIT_TEST(Guides_TwoPointsOnTrackOneViaOsm)
   Checkpoints const checkpoints{mercator::FromLatLon(48.13998, 11.56982),
                                 mercator::FromLatLon(48.14448, 11.57259)};
 
-  double const expectedDistM = 702.4;
-  double const expectedTimeS = 821.6;
-  size_t const expectedPointsCount = 11;
+  double const expectedDistM = 788.681;
+  double const expectedTimeS = 903.3;
+  size_t const expectedPointsCount = 13;
 
   TestGuideRoute(checkpoints, expectedDistM, expectedTimeS, expectedPointsCount);
   ReverseCheckpoints(checkpoints);
@@ -86,7 +84,7 @@ UNIT_TEST(Guides_FinishPointOnTrack)
   Checkpoints const checkpoints{mercator::FromLatLon(48.1394659, 11.575924),
                                 mercator::FromLatLon(48.1407632, 11.5716992)};
 
-  TestGuideRoute(checkpoints, 840.1 /* expectedDistM */, 771.3 /* expectedTimeS */, 37 /* expectedPointsCount */);
+  TestGuideRoute(checkpoints, 840.1 /* expectedDistM */, 736.279 /* expectedTimeS */, 37 /* expectedPointsCount */);
 }
 
 // Start checkpoint is on the track, finish checkpoint is far away. We build the first part of the
@@ -96,7 +94,7 @@ UNIT_TEST(Guides_StartPointOnTrack)
   Checkpoints const checkpoints{mercator::FromLatLon(48.14168, 11.57244),
                                 mercator::FromLatLon(48.13741, 11.56095)};
 
-  TestGuideRoute(checkpoints, 1200.45 /* expectedDistM */, 1116.43 /* expectedTimeS */, 52 /* expectedPointsCount */);
+  TestGuideRoute(checkpoints, 1200.45 /* expectedDistM */, 1056.45 /* expectedTimeS */, 52 /* expectedPointsCount */);
 }
 
 // Start and finish lie on the track; 3 intermediate points are far away from the track.
@@ -107,6 +105,6 @@ UNIT_TEST(Guides_MultipleIntermediatePoints)
        mercator::FromLatLon(48.14192, 11.57548), mercator::FromLatLon(48.14106, 11.57279),
        mercator::FromLatLon(48.14044, 11.57061)});
 
-  TestGuideRoute(checkpoints, 1258.05 /* expectedDistM */, 1094.78 /* expectedTimeS */, 66 /* expectedPointsCount */);
+  TestGuideRoute(checkpoints, 1231.91 /* expectedDistM */, 1042.65 /* expectedTimeS */, 67 /* expectedPointsCount */);
 }
 } // namespace guides_tests

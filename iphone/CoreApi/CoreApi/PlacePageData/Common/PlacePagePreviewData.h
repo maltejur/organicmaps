@@ -15,16 +15,16 @@ typedef NS_ENUM(NSInteger, PlacePageDataHotelType) {
 };
 
 typedef NS_ENUM(NSInteger, PlacePageDataOpeningHours) {
+  PlacePageDataOpeningHoursUnknown,
   PlacePageDataOpeningHoursAllDay,
   PlacePageDataOpeningHoursOpen,
-  PlacePageDataOpeningHoursClosed,
-  PlacePageDataOpeningHoursUnknown
+  PlacePageDataOpeningHoursClosed
 };
 
 typedef struct {
-    PlacePageDataOpeningHours state;
-    time_t nextTimeOpen;
-    time_t nextTimeClosed;
+  PlacePageDataOpeningHours state;
+  time_t nextTimeOpen;
+  time_t nextTimeClosed;
 } PlacePageDataSchedule;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -32,13 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface PlacePagePreviewData : NSObject
 
 @property(nonatomic, readonly, nullable) NSString *title;
+@property(nonatomic, readonly, nullable) NSString *secondaryTitle;
 @property(nonatomic, readonly, nullable) NSString *subtitle;
 @property(nonatomic, readonly, nullable) NSString *coordinates;
-@property(nonatomic, readonly, nullable) NSString *address;
+@property(nonatomic, readonly, nullable) NSString *secondarySubtitle;
 @property(nonatomic, readonly) PlacePageDataSchedule schedule;
-@property(nonatomic, readonly) PlacePageDataHotelType hotelType;
 @property(nonatomic, readonly) BOOL isMyPosition;
-@property(nonatomic, readonly) BOOL isPopular;
 
 @end
 

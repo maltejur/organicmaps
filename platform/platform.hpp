@@ -61,9 +61,9 @@ public:
 
   enum EFileType
   {
-    FILE_TYPE_UNKNOWN = 0x1,
-    FILE_TYPE_REGULAR = 0x2,
-    FILE_TYPE_DIRECTORY = 0x4
+    Unknown = 0x1,
+    Regular = 0x2,
+    Directory = 0x4
   };
 
   enum class EConnectionType : uint8_t
@@ -102,7 +102,7 @@ protected:
   std::string m_settingsDir;
 
   /// Used in Android only to get corret GUI elements layout.
-  bool m_isTablet;
+  bool m_isTablet = false;
 
   /// Returns last system call error as EError.
   static EError ErrnoToError();
@@ -112,9 +112,9 @@ protected:
 
   std::unique_ptr<base::TaskLoop> m_guiThread;
 
-  std::unique_ptr<base::thread_pool::delayed::ThreadPool> m_networkThread;
-  std::unique_ptr<base::thread_pool::delayed::ThreadPool> m_fileThread;
-  std::unique_ptr<base::thread_pool::delayed::ThreadPool> m_backgroundThread;
+  std::unique_ptr<base::DelayedThreadPool> m_networkThread;
+  std::unique_ptr<base::DelayedThreadPool> m_fileThread;
+  std::unique_ptr<base::DelayedThreadPool> m_backgroundThread;
 
   platform::BatteryLevelTracker m_batteryTracker;
 
@@ -161,11 +161,11 @@ public:
   [[nodiscard]] static bool MkDirChecked(std::string const & dirName);
 
   // Creates the directory path dirName.
-  // The function will create all parent directories necessary to create the directory.
+  // The function creates all parent directories necessary to create the directory.
   // Returns true if successful; otherwise returns false.
-  // If the path already exists when this function is called, it will return true.
-  // If it was possible to create only a part of the directories, the function will returns false
-  // and will not restore the previous state of the file system.
+  // If the path already exists when this function is called, it returns true.
+  // If only some intermediate directories were created, the function returns false
+  // and does not restore the previous state of the file system.
   [[nodiscard]] static bool MkDirRecursively(std::string const & dirName);
 
   /// Removes empty directory from the filesystem.
@@ -210,7 +210,7 @@ public:
   /// @param directory directory path with slash at the end
   //@{
   /// @param ext files extension to find, like ".mwm".
-  static void GetFilesByExt(std::string const & directory, std::string const & ext,
+  static void GetFilesByExt(std::string const & directory, std::string_view ext,
                             FilesList & outFiles);
   static void GetFilesByRegExp(std::string const & directory, std::string const & regexp,
                                FilesList & outFiles);
@@ -235,6 +235,11 @@ public:
   static bool GetFileSizeByFullPath(std::string const & filePath, uint64_t & size);
   //@}
 
+  /// @return 0 in case of failure.
+  static time_t GetFileCreationTime(std::string const & path);
+  /// @return 0 in case of failure.
+  static time_t GetFileModificationTime(std::string const & path);
+
   /// Used to check available free storage space for downloading.
   enum TStorageStatus
   {
@@ -246,12 +251,13 @@ public:
 
   // Please note, that number of active cores can vary at runtime.
   // DO NOT assume for the same return value between calls.
-  unsigned CpuCores() const;
+  static unsigned CpuCores() ;
 
   void GetFontNames(FilesList & res) const;
 
+  // TODO: Optimize for each platform/device.
   int VideoMemoryLimit() const;
-
+  // TODO: Optimize for each platform/device.
   int PreCachingDepth() const;
 
   std::string DeviceName() const;
@@ -265,9 +271,7 @@ public:
   int32_t IntVersion() const;
 
   /// @return url for clients to download maps
-  //@{
   std::string MetaServerUrl() const;
-  //@}
 
   /// @return JSON-encoded list of urls if metaserver is unreachable
   std::string DefaultUrlsJSON() const;
@@ -312,7 +316,7 @@ public:
 
   template <typename Task>
   base::TaskLoop::PushResult RunDelayedTask(
-      Thread thread, base::thread_pool::delayed::ThreadPool::Duration const & delay, Task && task)
+      Thread thread, base::DelayedThreadPool::Duration const & delay, Task && task)
   {
     ASSERT(m_networkThread && m_fileThread && m_backgroundThread, ());
     switch (thread)

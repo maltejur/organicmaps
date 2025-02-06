@@ -7,7 +7,6 @@
 #include "drape_frontend/shape_view_params.hpp"
 #include "drape_frontend/text_layout.hpp"
 #include "drape_frontend/text_shape.hpp"
-#include "drape_frontend/tile_utils.hpp"
 #include "drape_frontend/visual_params.hpp"
 
 #include "shaders/programs.hpp"
@@ -30,12 +29,11 @@ namespace df
 {
 namespace
 {
-std::array<double, 20> const kLineWidthZoomFactor =
+std::array<double, 20> constexpr kLineWidthZoomFactor =
 {
 // 1   2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20
   0.3, 0.3, 0.3, 0.4, 0.5, 0.6, 0.7, 0.7, 0.7, 0.7, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
 };
-int const kLineSimplifyLevelEnd = 15;
 
 template <typename TCreateVector>
 void AlignFormingNormals(TCreateVector const & fn, dp::Anchor anchor, dp::Anchor first,
@@ -65,19 +63,6 @@ void AlignVertical(float halfHeight, dp::Anchor anchor, glsl::vec2 & up, glsl::v
 {
   AlignFormingNormals([&halfHeight] { return glsl::vec2(0.0f, -halfHeight); }, anchor, dp::Top,
                       dp::Bottom, up, down);
-}
-
-TextLayout MakePrimaryTextLayout(dp::TitleDecl const & titleDecl,
-                                 ref_ptr<dp::TextureManager> textures)
-{
-  dp::FontDecl const & fontDecl = titleDecl.m_primaryTextFont;
-  auto const vs = static_cast<float>(df::VisualParams::Instance().GetVisualScale());
-  bool const isSdf = fontDecl.m_outlineColor != dp::Color::Transparent() ||
-                     df::VisualParams::Instance().IsSdfPrefered();
-  TextLayout textLayout;
-  textLayout.Init(strings::MakeUniString(titleDecl.m_primaryText), fontDecl.m_size * vs, isSdf,
-                  textures);
-  return textLayout;
 }
 
 struct UserPointVertex : public gpu::BaseVertex
@@ -137,7 +122,7 @@ m2::PointF GetSymbolOffsetForZoomLevel(ref_ptr<UserPointMark::SymbolOffsets> sym
   CHECK_LESS_OR_EQUAL(tileKey.m_zoomLevel, scales::UPPER_STYLE_SCALE, ());
 
   auto const offsetIndex = static_cast<size_t>(tileKey.m_zoomLevel - 1);
-  return symbolOffsets->at(offsetIndex);
+  return symbolOffsets->operator[](offsetIndex);
 }
 
 void GenerateColoredSymbolShapes(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::TextureManager> textures,
@@ -154,10 +139,13 @@ void GenerateColoredSymbolShapes(ref_ptr<dp::GraphicsContext> context, ref_ptr<d
   if (isTextBg)
   {
     CHECK(renderInfo.m_titleDecl, ());
-    auto const & titleDecl = renderInfo.m_titleDecl->at(0);
-    auto textLayout = MakePrimaryTextLayout(titleDecl, textures);
-    sizeInc.x = textLayout.GetPixelLength();
-    sizeInc.y = textLayout.GetPixelHeight();
+    auto const & titleDecl = renderInfo.m_titleDecl->operator[](0);
+    auto const textMetrics = textures->ShapeSingleTextLine(dp::kBaseFontSizePixels, titleDecl.m_primaryText, nullptr);
+    auto const fontScale = static_cast<float>(VisualParams::Instance().GetFontScale());
+    float const textRatio = titleDecl.m_primaryTextFont.m_size * fontScale / dp::kBaseFontSizePixels;
+
+    sizeInc.x = textMetrics.m_lineWidthInPixels * textRatio;
+    sizeInc.y = textMetrics.m_maxLineHeightInPixels * textRatio;
 
     if (renderInfo.m_symbolSizes != nullptr)
     {
@@ -285,11 +273,6 @@ void GenerateTextShapes(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::Textur
     params.m_titleDecl.m_secondaryTextFont.m_size *= vs;
     params.m_titleDecl.m_primaryOffset *= vs;
     params.m_titleDecl.m_secondaryOffset *= vs;
-    bool const isSdf = df::VisualParams::Instance().IsSdfPrefered();
-    params.m_titleDecl.m_primaryTextFont.m_isSdf =
-        params.m_titleDecl.m_primaryTextFont.m_outlineColor != dp::Color::Transparent() || isSdf;
-    params.m_titleDecl.m_secondaryTextFont.m_isSdf =
-        params.m_titleDecl.m_secondaryTextFont.m_outlineColor != dp::Color::Transparent() || isSdf;
 
     params.m_depthTestEnabled = renderInfo.m_depthTestEnabled;
     params.m_depth = renderInfo.m_depth;
@@ -327,13 +310,13 @@ void GenerateTextShapes(ref_ptr<dp::GraphicsContext> context, ref_ptr<dp::Textur
   }
 }
 
-m2::SharedSpline SimplifySpline(UserLineRenderParams const & renderInfo, double minSqrLength)
+m2::SharedSpline SimplifySpline(m2::SharedSpline const & in, double minSqrLength)
 {
   m2::SharedSpline spline;
-  spline.Reset(new m2::Spline(renderInfo.m_spline->GetSize()));
+  spline.Reset(new m2::Spline(in->GetSize()));
 
   m2::PointD lastAddedPoint;
-  for (auto const & point : renderInfo.m_spline->GetPath())
+  for (auto const & point : in->GetPath())
   {
     if (spline->GetSize() > 1 && point.SquaredLength(lastAddedPoint) < minSqrLength)
     {
@@ -536,7 +519,7 @@ void ProcessSplineSegmentRects(m2::SharedSpline const & spline, double maxSegmen
     auto itEnd = spline->GetPoint(length + maxSegmentLength);
     if (itEnd.BeginAgain())
     {
-      double const lastSegmentLength = spline->GetLengths().back();
+      double const lastSegmentLength = spline->GetLastLength();
       itEnd = spline->GetPoint(splineFullLength - lastSegmentLength / 2.0);
       splineRect.Add(spline->GetPath().back());
     }
@@ -561,14 +544,19 @@ void CacheUserLines(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKe
   CHECK_LESS(tileKey.m_zoomLevel - 1, static_cast<int>(kLineWidthZoomFactor.size()), ());
 
   double const vs = df::VisualParams::Instance().GetVisualScale();
-  bool const simplify = tileKey.m_zoomLevel <= kLineSimplifyLevelEnd;
+  bool const simplify = tileKey.m_zoomLevel <= 15;
 
   // This var is used only if simplify == true.
   double minSegmentSqrLength = 1.0;
   if (simplify)
     minSegmentSqrLength = base::Pow2(4.0 * vs * GetScreenScale(tileKey.m_zoomLevel));
 
-  for (auto id : linesId)
+  m2::RectD const tileRect = tileKey.GetGlobalRect();
+
+  // Process spline by segments that are no longer than tile size.
+  //double const maxLength = mercator::Bounds::kRangeX / (1 << (tileKey.m_zoomLevel - 1));
+
+  for (auto const & id : linesId)
   {
     auto const it = renderParams.find(id);
     if (it == renderParams.end())
@@ -576,48 +564,51 @@ void CacheUserLines(ref_ptr<dp::GraphicsContext> context, TileKey const & tileKe
 
     UserLineRenderParams const & renderInfo = *it->second;
 
-    m2::RectD const tileRect = tileKey.GetGlobalRect();
-
-    double const maxLength = mercator::Bounds::kRangeX / (1 << (tileKey.m_zoomLevel - 1));
-
-    bool intersected = false;
-    ProcessSplineSegmentRects(renderInfo.m_spline, maxLength,
-                              [&tileRect, &intersected](m2::RectD const & segmentRect)
+    // Spline is a shared_ptr here, can reassign later.
+    for (auto spline : renderInfo.m_splines)
     {
-      if (segmentRect.IsIntersect(tileRect))
-        intersected = true;
-      return !intersected;
-    });
-
-    if (!intersected)
-      continue;
-
-    m2::SharedSpline spline = renderInfo.m_spline;
-    if (simplify)
-      spline = SimplifySpline(renderInfo, minSegmentSqrLength);
-
-    if (spline->GetSize() < 2)
-      continue;
-
-    auto const clippedSplines = m2::ClipSplineByRect(tileRect, spline);
-    for (auto const & clippedSpline : clippedSplines)
-    {
-      for (auto const & layer : renderInfo.m_layers)
+      // This check is redundant, because we already made rough check while covering tracks by tiles
+      // (see UserMarkGenerator::UpdateIndex).
+      // Also looks like ClipSplineByRect works faster than Spline iterating in ProcessSplineSegmentRects
+      // by |maxLength| segments on high zoom levels.
+      /*
+      bool intersected = false;
+      ProcessSplineSegmentRects(spline, maxLength, [&tileRect, &intersected](m2::RectD const & segmentRect)
       {
-        LineViewParams params;
-        params.m_tileCenter = tileKey.GetGlobalRect().Center();
-        params.m_baseGtoPScale = 1.0f;
-        params.m_cap = dp::RoundCap;
-        params.m_join = dp::RoundJoin;
-        params.m_color = layer.m_color;
-        params.m_depthTestEnabled = true;
-        params.m_depth = layer.m_depth;
-        params.m_depthLayer = renderInfo.m_depthLayer;
-        params.m_width = static_cast<float>(layer.m_width * vs * kLineWidthZoomFactor[tileKey.m_zoomLevel - 1]);
-        params.m_minVisibleScale = 1;
-        params.m_rank = 0;
+        if (segmentRect.IsIntersect(tileRect))
+          intersected = true;
+        return !intersected;
+      });
 
-        LineShape(clippedSpline, params).Draw(context, make_ref(&batcher), textures);
+      if (!intersected)
+        continue;
+      */
+
+      if (simplify)
+        spline = SimplifySpline(spline, minSegmentSqrLength);
+
+      if (spline->GetSize() < 2)
+        continue;
+
+      for (auto const & clippedSpline : m2::ClipSplineByRect(tileRect, spline))
+      {
+        for (auto const & layer : renderInfo.m_layers)
+        {
+          LineViewParams params;
+          params.m_tileCenter = tileRect.Center();
+          params.m_baseGtoPScale = 1.0f;
+          params.m_cap = dp::RoundCap;
+          params.m_join = dp::RoundJoin;
+          params.m_color = layer.m_color;
+          params.m_depthTestEnabled = true;
+          params.m_depth = layer.m_depth;
+          params.m_depthLayer = renderInfo.m_depthLayer;
+          params.m_width = static_cast<float>(layer.m_width * vs * kLineWidthZoomFactor[tileKey.m_zoomLevel - 1]);
+          params.m_minVisibleScale = 1;
+          params.m_rank = 0;
+
+          LineShape(clippedSpline, params).Draw(context, make_ref(&batcher), textures);
+        }
       }
     }
   }

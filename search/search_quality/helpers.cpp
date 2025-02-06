@@ -20,7 +20,7 @@
 
 #include "defines.hpp"
 
-#include "3party/jansson/myjansson.hpp"
+#include "cppjansson/cppjansson.hpp"
 
 namespace search
 {
@@ -60,7 +60,7 @@ void CheckLocale()
     ToJSONObject(*root, "coord", coord);
 
     unique_ptr<char, JSONFreeDeleter> buffer(
-        json_dumps(root.get(), JSON_COMPACT | JSON_ENSURE_ASCII));
+        json_dumps(root.get(), JSON_COMPACT));
 
     line.append(buffer.get());
   }

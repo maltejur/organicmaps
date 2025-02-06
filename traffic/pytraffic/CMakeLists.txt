@@ -36,15 +36,14 @@ omim_link_libraries(
   geometry
   coding
   base
-  jansson
-  oauthcpp
+  cppjansson
   protobuf
   pugixml
   opening_hours
   succinct
   ICU::i18n
   ${Boost_LIBRARIES}
-  ${LIBZ}
+  ZLIB::ZLIB
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")

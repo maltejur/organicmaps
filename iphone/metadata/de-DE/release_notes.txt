@@ -1,29 +1,20 @@
-• Neue OSM-Kartendaten ab dem 12. September
-• Absturz beim Starten nach dem Bearbeiten einiger OSM-Objekte behoben
-• Lesezeichenlisten werden nun nach der letzten Änderungszeit sortiert
-• Verbesserte Anzeige des nächsten Straßennamens in der Wegbeschreibung
-• Überall wird die gleiche Systemschrift verwendet
-• Verwenden Sie die Standard-Mail-App unter iOS 14, um einen Fehler zu melden
-• Aktivierte katalanische Übersetzungen
+• Neue OpenStreetMap-Daten vom 8. Januar
+• Tippen Sie auf Tracks, um Statistiken und ein interaktives Höhenprofil anzuzeigen
+• Eine eigenständige Schaltfläche zur Trackaufzeichnung
+• Track-Aufzeichnung – Live-Aktivitäts-Widget mit Track-Statistiken (iOS 16.2 und höher)
+• Serbische (Kyrillisch) und Lettische Sprachen hinzugefügt
+• Turm-POIs hinzugefügt
 
-Suche:
-• Anzeige von Funktionen im Ansichtsfenster oben in den Suchergebnissen
-• Erhebliche Beschleunigung einiger Suchszenarien
-• Verbessertes Kategorie-Ranking und Adressensuche.
-• Das Symbol für hervorgehobene Hotelsuchergebnisse auf der Karte wurde korrigiert
-• Verbesserte deutsche Kategoriesuche
-
-Stile und Icons:
-• Fahrschule, Musikschule, Sprachschule, archäologische Stätte hinzugefügt,
-• Die Hintergründe von historischen Friedhofssymbolen wurden entfernt
-• Verschiedene Schlosstypen hinzugefügt: castrum, fortified_church, fortress, hillfort, kremlin, manor, palace & shiro
-• Erhöhte Sichtbarkeit von Bildung und einigen Sportarten
-• Getrennte Möbel- und Küchentypen
-• Besser aussehende Freizeit=Bahn
-• Verkaufs=Brennstoff-Symbol repariert
-
-Lokalisierungen:
-• Fehlende Übersetzungen für craft=* hinzugefügt
-• Übersetzungen für Niederländisch, Portugiesisch (Brasilien), Italienisch, Katalanisch, Türkisch und Weißrussisch hinzugefügt/korrigiert
-• Katalanisch TTS (Text-To-Speech) aktiviert
-• Einige Telegram- und Instagram-Links wurden lokalisiert
+• Spezielle Symbole für die U-Bahnen Hongkong und Shenzhen sowie die Stadtbahn Berlin hinzugefügt, ein separates Monorail-Symbol
+• Dem Koordinaten-Button in den POI-Details wurde ein Kontextmenü hinzugefügt
+• Bei jedem Wechsel in den Vollbildmodus ein Erinnerungs-Popup anzeigen
+• Eine Erklärung anzeigen, wenn die Kategoriesuche im OSM-Editor nichts ergibt
+• Unterscheiden Sie zwischen Gras- und Grünland-/Wiesenfarben
+• Weniger gesättigte/auffällige Farbe in Wohngärten
+• Gelbe Straßenschilder wurden korrigiert, sodass sie im Nachtmodus grün angezeigt wurden
+• Vegetationsfüllungen im Autonavigationsstil früher anzeigen
+• Anzeige komplexer Nicht-Zahlenebenen zum Erstellen von POIs
+• Verbesserte Suche nach Gipfeln und Sätteln/Pässen
+• EN als zusätzliche Suchsprache im OSM-Editor
+• Aktualisieren Sie die estnischen, finnischen, deutschen, italienischen und türkischen Übersetzungen
+• ...viele weitere Fehlerbehebungen und UI-Verbesserungen

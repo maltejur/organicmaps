@@ -48,7 +48,7 @@ set(SRC
   storage_helpers.hpp
 )
 
-if(${PLATFORM_IPHONE})
+if (PLATFORM_IPHONE)
   append(SRC
     background_downloading/downloader_adapter_ios.h
     background_downloading/downloader_adapter_ios.mm
@@ -67,7 +67,7 @@ target_link_libraries(${PROJECT_NAME}
   platform
   coding
   mwm_diff
-  jansson
+  cppjansson
 )
 
 omim_add_test_subdirectory(storage_tests)

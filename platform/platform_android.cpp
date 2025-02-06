@@ -22,7 +22,7 @@ using namespace std;
 
 Platform::Platform()
 {
-  /// @see initialization routine in android/jni/com/.../Platform.hpp
+  /// @see initialization routine in android/app/src/main/cpp/com/.../Platform.hpp
 }
 
 #ifdef DEBUG
@@ -66,7 +66,7 @@ unique_ptr<ModelReader> Platform::GetReader(string const & file, string searchSc
 
       if (ext == DATA_FILE_EXTENSION)
       {
-        if (strings::StartsWith(file, WORLD_COASTS_FILE_NAME) || strings::StartsWith(file, WORLD_FILE_NAME))
+        if (file.starts_with(WORLD_COASTS_FILE_NAME) || file.starts_with(WORLD_FILE_NAME))
           searchScope = "wsr";
         else
           searchScope = "w";
@@ -163,15 +163,9 @@ void Platform::GetFilesByRegExp(string const & directory, string const & regexp,
     pl::EnumerateFilesByRegExp(directory, regexp, res);
 }
 
-int Platform::VideoMemoryLimit() const
-{
-  return 10 * 1024 * 1024;
-}
+int Platform::VideoMemoryLimit() const { return 10 * 1024 * 1024; }
 
-int Platform::PreCachingDepth() const
-{
-  return 3;
-}
+int Platform::PreCachingDepth() const { return 3; }
 
 bool Platform::GetFileSizeByName(string const & fileName, uint64_t & size) const
 {
@@ -215,7 +209,7 @@ void Platform::GetSystemFontNames(FilesList & res) const
     string name(entry);
     if (name != "Roboto-Medium.ttf" && name != "Roboto-Regular.ttf")
     {
-      if (!strings::StartsWith(name, "NotoNaskh") && !strings::StartsWith(name, "NotoSans"))
+      if (!name.starts_with("NotoNaskh") && !name.starts_with("NotoSans"))
         return;
 
       if (name.find("-Regular") == string::npos)
@@ -224,7 +218,6 @@ void Platform::GetSystemFontNames(FilesList & res) const
     else
       wasRoboto = true;
 
-    LOG(LINFO, ("Found usable system font", name));
     res.push_back(path + name);
   });
 
@@ -232,9 +225,24 @@ void Platform::GetSystemFontNames(FilesList & res) const
   {
     string droidSans = path + "DroidSans.ttf";
     if (IsFileExistsByFullPath(droidSans))
-    {
-      LOG(LINFO, ("Found usable system font", droidSans));
       res.push_back(std::move(droidSans));
-    }
   }
+}
+
+// static
+time_t Platform::GetFileCreationTime(std::string const & path)
+{
+  struct stat st;
+  if (0 == stat(path.c_str(), &st))
+    return st.st_atim.tv_sec;
+  return 0;
+}
+
+// static
+time_t Platform::GetFileModificationTime(std::string const & path)
+{
+  struct stat st;
+  if (0 == stat(path.c_str(), &st))
+    return st.st_mtim.tv_sec;
+  return 0;
 }

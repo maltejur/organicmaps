@@ -23,10 +23,11 @@
 #include "drape/utils/projection.hpp"
 
 #include "indexer/drawing_rules.hpp"
-#include "indexer/map_style_reader.hpp"
 #include "indexer/scales.hpp"
 
 #include "geometry/any_rect2d.hpp"
+
+#include "platform/trace.hpp"
 
 #include "base/assert.hpp"
 #include "base/logging.hpp"
@@ -166,11 +167,11 @@ FrontendRenderer::FrontendRenderer(Params && params)
   , m_blockTapEvents(params.m_blockTapEvents)
   , m_choosePositionMode(false)
   , m_screenshotMode(params.m_myPositionParams.m_hints.m_screenshotMode)
+  , m_mapLangIndex(StringUtf8Multilang::kDefaultCode)
   , m_viewport(params.m_viewport)
   , m_modelViewChangedHandler(std::move(params.m_modelViewChangedHandler))
   , m_tapEventInfoHandler(std::move(params.m_tapEventHandler))
   , m_userPositionChangedHandler(std::move(params.m_positionChangedHandler))
-  , m_userPositionPendingTimeoutHandler(std::move(params.m_userPositionPendingTimeoutHandler))
   , m_requestedTiles(params.m_requestedTiles)
   , m_maxGeneration(0)
   , m_maxUserMarksGeneration(0)
@@ -186,6 +187,7 @@ FrontendRenderer::FrontendRenderer(Params && params)
   , m_scenarioManager(new ScenarioManager(this))
 #endif
   , m_notifier(make_unique_dp<DrapeNotifier>(params.m_commutator))
+  , m_renderInjectionHandler(std::move(params.m_renderInjectionHandler))
 {
 #ifdef DEBUG
   m_isTeardowned = false;
@@ -194,7 +196,6 @@ FrontendRenderer::FrontendRenderer(Params && params)
   ASSERT(m_modelViewChangedHandler, ());
   ASSERT(m_tapEventInfoHandler, ());
   ASSERT(m_userPositionChangedHandler, ());
-  ASSERT(m_userPositionPendingTimeoutHandler, ());
 
   m_gpsTrackRenderer = make_unique_dp<GpsTrackRenderer>([this](uint32_t pointsCount)
   {
@@ -330,7 +331,7 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
 #endif
         m_trafficRenderer->OnGeometryReady(GetCurrentZoom());
 
-#if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
+#if defined(OMIM_OS_DESKTOP)
         if (m_graphicsStage == GraphicsStage::WaitReady)
           m_graphicsStage = GraphicsStage::WaitRendering;
 #endif
@@ -413,7 +414,9 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
     {
       ref_ptr<MapShapesMessage> msg = message;
       CHECK(m_context != nullptr, ());
-      m_myPositionController->SetRenderShape(m_context, m_texMng, msg->AcceptShape());
+      m_texMng->ApplyInvalidatedStaticTextures();
+      m_myPositionController->SetRenderShape(m_context, m_texMng, msg->AcceptShape(),
+                                             msg->AcceptPeloadedArrow3dData());
       m_selectionShape = msg->AcceptSelection();
       if (m_selectObjectMessage != nullptr)
       {
@@ -762,7 +765,17 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
       }
       break;
     }
+    case Message::Type::SetMapLangIndex:
+    {
+      ref_ptr<SetMapLangIndexMessage> const msg = message;
 
+      if (m_mapLangIndex != msg->MapLangIndex())
+      {
+        m_mapLangIndex = msg->MapLangIndex();
+        m_forceUpdateScene = true;
+      }
+      break;
+    }
   case Message::Type::FlushCirclesPack:
     {
       ref_ptr<FlushCirclesPackMessage> msg = message;
@@ -832,12 +845,14 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
         }
         else
         {
-          m2::PointD const pt = msg->HasPosition()? msg->GetPosition() :
-                                m_userEventStream.GetCurrentScreen().GlobalRect().Center();
+          // Exact position for POI or screen's center for Add place on map.
           int zoom = kDoNotChangeZoom;
           if (GetCurrentZoom() < scales::GetAddNewPlaceScale())
             zoom = scales::GetAddNewPlaceScale();
-          AddUserEvent(make_unique_dp<SetCenterEvent>(pt, zoom, true /* isAnim */, false /* trackVisibleViewport */,
+
+          auto const pt = msg->GetOptionalPosition();
+          AddUserEvent(make_unique_dp<SetCenterEvent>(pt ? *pt : m_userEventStream.GetCurrentScreen().GlobalRect().Center(),
+                                                      zoom, true /* isAnim */, false /* trackVisibleViewport */,
                                                       nullptr /* parallelAnimCreator */));
         }
       }
@@ -865,11 +880,9 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
     {
       ref_ptr<EnableTransitSchemeMessage > msg = message;
       m_transitSchemeEnabled = msg->IsEnabled();
-#ifndef OMIM_OS_IPHONE_SIMULATOR
-      CHECK(m_context != nullptr, ());
-      m_postprocessRenderer->SetEffectEnabled(m_context, PostprocessRenderer::Effect::Antialiasing,
-                                              msg->IsEnabled() || m_isAntialiasingEnabled);
-#endif
+      // Enabling anti aliasing destroys performance on some Android devices
+      // Jagged lines on subway lines are only visible on low density screens
+      // so we don't enable it here
       if (!msg->IsEnabled())
         m_transitSchemeRenderer->ClearContextDependentResources(make_ref(m_overlayTree));
       break;
@@ -977,8 +990,7 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
   case Message::Type::SetPosteffectEnabled:
     {
       ref_ptr<SetPosteffectEnabledMessage> msg = message;
-      if (msg->GetEffect() == PostprocessRenderer::Effect::Antialiasing)
-        m_isAntialiasingEnabled = msg->IsEnabled();
+      // Enabling anti aliasing destroys performance on some Android devices
 #ifndef OMIM_OS_IPHONE_SIMULATOR
       CHECK(m_context != nullptr, ());
       m_postprocessRenderer->SetEffectEnabled(m_context, msg->GetEffect(), msg->IsEnabled());
@@ -1028,7 +1040,7 @@ void FrontendRenderer::AcceptMessage(ref_ptr<Message> message)
       break;
     }
 
-#if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
+#if defined(OMIM_OS_DESKTOP)
   case Message::Type::NotifyGraphicsReady:
     {
       ref_ptr<NotifyGraphicsReadyMessage> msg = message;
@@ -1202,7 +1214,7 @@ void FrontendRenderer::AddToRenderGroup(dp::RenderState const & state,
   drape_ptr<TRenderGroup> group = make_unique_dp<TRenderGroup>(state, newTile);
   group->AddBucket(std::move(renderBucket));
 
-  layer.m_renderGroups.push_back(move(group));
+  layer.m_renderGroups.push_back(std::move(group));
   layer.m_isDirty = true;
 }
 
@@ -1279,7 +1291,7 @@ std::pair<FeatureID, kml::MarkId> FrontendRenderer::GetVisiblePOI(m2::RectD cons
   if (selectResult.empty())
     return {FeatureID(), kml::kInvalidMarkId};
 
-  double minSquaredDist = std::numeric_limits<double>::infinity();
+  double minSquaredDist = std::numeric_limits<double>::max();
   ref_ptr<dp::OverlayHandle> closestOverlayHandle;
   for (ref_ptr<dp::OverlayHandle> const & handle : selectResult)
   {
@@ -1403,6 +1415,7 @@ void FrontendRenderer::EndUpdateOverlayTree()
 
 void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFrame)
 {
+  TRACE_SECTION("[drape] RenderScene");
   CHECK(m_context != nullptr, ());
 #if defined(DRAPE_MEASURER_BENCHMARK) && (defined(RENDER_STATISTIC) || defined(TRACK_GPU_MEM))
   DrapeImmediateRenderingMeasurerGuard drapeMeasurerGuard(m_context);
@@ -1431,10 +1444,11 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
     Render2dLayer(modelView);
     RenderUserMarksLayer(modelView, DepthLayer::UserLineLayer);
 
-    if (m_buildingsFramebuffer->IsSupported())
+    bool const hasTransitRouteData = HasTransitRouteData();
+    if (m_buildingsFramebuffer->IsSupported() && !m_routeRenderer->IsRulerRoute())
     {
       RenderTrafficLayer(modelView);
-      if (!HasTransitRouteData())
+      if (!hasTransitRouteData)
         RenderRouteLayer(modelView);
       Render3dLayer(modelView);
     }
@@ -1442,7 +1456,7 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
     {
       Render3dLayer(modelView);
       RenderTrafficLayer(modelView);
-      if (!HasTransitRouteData())
+      if (!hasTransitRouteData)
         RenderRouteLayer(modelView);
     }
 
@@ -1484,7 +1498,7 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
       }
     }
 
-    if (HasTransitRouteData())
+    if (hasTransitRouteData)
       RenderRouteLayer(modelView);
 
     {
@@ -1508,7 +1522,15 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
     return;
 
   if (IsValidCurrentZoom())
-    m_myPositionController->Render(m_context, make_ref(m_gpuProgramManager), modelView, GetCurrentZoom(), m_frameValues);
+  {
+    uint32_t clearBits = dp::ClearBits::DepthBit;
+    if (m_apiVersion == dp::ApiVersion::OpenGLES2 || m_apiVersion == dp::ApiVersion::OpenGLES3)
+      clearBits |= dp::ClearBits::StencilBit;
+    m_context->Clear(clearBits, dp::kClearBitsStoreAll);
+
+    m_myPositionController->Render(m_context, make_ref(m_gpuProgramManager), modelView,
+                                   GetCurrentZoom(), m_frameValues);
+  }
 
   if (m_guiRenderer && !m_screenshotMode)
   {
@@ -1516,7 +1538,7 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
                           modelView);
   }
 
-#if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
+#if defined(OMIM_OS_DESKTOP)
   if (m_graphicsStage == GraphicsStage::WaitRendering)
     m_graphicsStage = GraphicsStage::Rendered;
 #endif
@@ -1524,6 +1546,7 @@ void FrontendRenderer::RenderScene(ScreenBase const & modelView, bool activeFram
 
 void FrontendRenderer::Render2dLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] Render2dLayer");
   RenderLayer & layer2d = m_layers[static_cast<size_t>(DepthLayer::GeometryLayer)];
   layer2d.Sort(make_ref(m_overlayTree));
 
@@ -1535,6 +1558,7 @@ void FrontendRenderer::Render2dLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::PreRender3dLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] PreRender3dLayer");
   if (!m_buildingsFramebuffer->IsSupported())
     return;
 
@@ -1555,6 +1579,7 @@ void FrontendRenderer::PreRender3dLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::Render3dLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] Render3dLayer");
   RenderLayer & layer = m_layers[static_cast<size_t>(DepthLayer::Geometry3dLayer)];
   if (layer.m_renderGroups.empty())
     return;
@@ -1581,27 +1606,13 @@ void FrontendRenderer::Render3dLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::RenderOverlayLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] RenderOverlayLayer");
   CHECK(m_context != nullptr, ());
   DEBUG_LABEL(m_context, "Overlay Layer");
   RenderLayer & overlay = m_layers[static_cast<size_t>(DepthLayer::OverlayLayer)];
   BuildOverlayTree(modelView);
   for (drape_ptr<RenderGroup> & group : overlay.m_renderGroups)
     RenderSingleGroup(m_context, modelView, make_ref(group));
-
-  if (GetStyleReader().IsCarNavigationStyle())
-    RenderNavigationOverlayLayer(modelView);
-}
-
-void FrontendRenderer::RenderNavigationOverlayLayer(ScreenBase const & modelView)
-{
-  CHECK(m_context != nullptr, ());
-  DEBUG_LABEL(m_context, "Navigation Overlay Layer");
-  RenderLayer & navOverlayLayer = m_layers[static_cast<size_t>(DepthLayer::NavigationLayer)];
-  for (auto & group : navOverlayLayer.m_renderGroups)
-  {
-    if (group->HasOverlayHandles())
-      RenderSingleGroup(m_context, modelView, make_ref(group));
-  }
 }
 
 bool FrontendRenderer::HasTransitRouteData() const
@@ -1616,6 +1627,7 @@ bool FrontendRenderer::HasRouteData() const
 
 void FrontendRenderer::RenderTransitSchemeLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] RenderTransitSchemeLayer");
   CHECK(m_context != nullptr, ());
   if (m_transitSchemeEnabled && m_transitSchemeRenderer->IsSchemeVisible(GetCurrentZoom()))
   {
@@ -1630,6 +1642,7 @@ void FrontendRenderer::RenderTransitSchemeLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::RenderTrafficLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] RenderTrafficLayer");
   CHECK(m_context != nullptr, ());
   if (m_trafficRenderer->HasRenderData())
   {
@@ -1642,6 +1655,7 @@ void FrontendRenderer::RenderTrafficLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::RenderTransitBackground()
 {
+  TRACE_SECTION("[drape] RenderTransitBackground");
   if (!m_finishTexturesInitialization)
     return;
 
@@ -1660,6 +1674,7 @@ void FrontendRenderer::RenderTransitBackground()
 
 void FrontendRenderer::RenderRouteLayer(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] RenderRouteLayer");
   if (HasTransitRouteData())
     RenderTransitBackground();
 
@@ -1675,6 +1690,7 @@ void FrontendRenderer::RenderRouteLayer(ScreenBase const & modelView)
 
 void FrontendRenderer::RenderUserMarksLayer(ScreenBase const & modelView, DepthLayer layerId)
 {
+  TRACE_SECTION("[drape] RenderUserMarksLayer");
   auto & renderGroups = m_layers[static_cast<size_t>(layerId)].m_renderGroups;
   if (renderGroups.empty())
     return;
@@ -1690,6 +1706,7 @@ void FrontendRenderer::RenderUserMarksLayer(ScreenBase const & modelView, DepthL
 void FrontendRenderer::RenderNonDisplaceableUserMarksLayer(ScreenBase const & modelView,
                                                            DepthLayer layerId)
 {
+  TRACE_SECTION("[drape] RenderNonDisplaceableUserMarksLayer");
   auto & layer = m_layers[static_cast<size_t>(layerId)];
   layer.Sort(nullptr);
   for (drape_ptr<RenderGroup> & group : layer.m_renderGroups)
@@ -1702,6 +1719,7 @@ void FrontendRenderer::RenderNonDisplaceableUserMarksLayer(ScreenBase const & mo
 
 void FrontendRenderer::RenderEmptyFrame()
 {
+  TRACE_SECTION("[drape] RenderEmptyFrame");
   CHECK(m_context != nullptr, ());
   if (!m_context->Validate())
     return;
@@ -1710,18 +1728,18 @@ void FrontendRenderer::RenderEmptyFrame()
     return;
 
   m_context->SetFramebuffer(nullptr /* default */);
-  auto const c = dp::Extract(drule::rules().GetBgColor(1 /* scale */), 255);
+  auto const c = dp::Color(drule::rules().GetBgColor(1 /* scale */), 255);
   m_context->SetClearColor(c);
   m_context->Clear(dp::ClearBits::ColorBit, dp::ClearBits::ColorBit /* storeBits */);
   m_context->ApplyFramebuffer("Empty frame");
   m_viewport.Apply(m_context);
-
   m_context->EndRendering();
   m_context->Present();
 }
 
 void FrontendRenderer::RenderFrame()
 {
+  TRACE_SECTION("[drape] RenderFrame");
   DrapeMeasurerGuard drapeMeasurerGuard;
 
   CHECK(m_context != nullptr, ());
@@ -1735,16 +1753,16 @@ void FrontendRenderer::RenderFrame()
   auto & scaleFpsHelper = gui::DrapeGui::Instance().GetScaleFpsHelper();
   m_frameData.m_timer.Reset();
 
-  ScreenBase const & modelView = ProcessEvents(m_frameData.m_modelViewChanged,
-                                               m_frameData.m_viewportChanged);
-  if (m_frameData.m_viewportChanged || m_needRestoreSize)
+  bool modelViewChanged, viewportChanged, needActiveFrame;
+  ScreenBase const & modelView = ProcessEvents(modelViewChanged, viewportChanged, needActiveFrame);
+  if (viewportChanged || m_needRestoreSize)
     OnResize(modelView);
 
   if (!m_context->BeginRendering())
     return;
 
   // Check for a frame is active.
-  bool isActiveFrame = m_frameData.m_modelViewChanged || m_frameData.m_viewportChanged;
+  bool isActiveFrame = modelViewChanged || viewportChanged || needActiveFrame;
 
   if (isActiveFrame)
     PrepareScene(modelView);
@@ -1770,6 +1788,9 @@ void FrontendRenderer::RenderFrame()
 
   RenderScene(modelView, isActiveFrameForScene);
 
+  if (m_renderInjectionHandler)
+    m_renderInjectionHandler(m_context, m_texMng, make_ref(m_gpuProgramManager), false);
+
   m_context->EndRendering();
 
   auto const hasForceUpdate = m_forceUpdateScene || m_forceUpdateUserMarks;
@@ -1778,7 +1799,7 @@ void FrontendRenderer::RenderFrame()
   isActiveFrame = true;
 #endif
 
-  if (m_frameData.m_modelViewChanged || hasForceUpdate)
+  if (modelViewChanged || hasForceUpdate)
     UpdateScene(modelView);
 
   InterpolationHolder::Instance().Advance(m_frameData.m_frameTime);
@@ -1800,7 +1821,7 @@ void FrontendRenderer::RenderFrame()
   m_frameData.m_forceFullRedrawNextFrame = m_overlayTree->IsNeedUpdate();
   if (canSuspend)
   {
-#if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
+#if defined(OMIM_OS_DESKTOP)
     EmitGraphicsReady();
 #endif
     // Process a message or wait for a message.
@@ -1857,12 +1878,12 @@ void FrontendRenderer::RenderFrame()
 
 void FrontendRenderer::BuildOverlayTree(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] BuildOverlayTree");
   if (!IsValidCurrentZoom())
     return;
 
   BeginUpdateOverlayTree(modelView);
   for (auto const layerId : {DepthLayer::OverlayLayer,
-                             DepthLayer::NavigationLayer,
                              DepthLayer::RoutingBottomMarkLayer,
                              DepthLayer::RoutingMarkLayer})
   {
@@ -1879,14 +1900,12 @@ void FrontendRenderer::BuildOverlayTree(ScreenBase const & modelView)
 void FrontendRenderer::PrepareBucket(dp::RenderState const & state, drape_ptr<dp::RenderBucket> & bucket)
 {
   CHECK(m_context != nullptr, ());
-  auto program = m_gpuProgramManager->GetProgram(state.GetProgram<gpu::Program>());
-  auto program3d = m_gpuProgramManager->GetProgram(state.GetProgram3d<gpu::Program>());
-  bool const isPerspective = m_userEventStream.GetCurrentScreen().isPerspective();
-  if (isPerspective)
-    program3d->Bind();
-  else
-    program->Bind();
-  bucket->GetBuffer()->Build(m_context, isPerspective ? program3d : program);
+
+  auto program = m_gpuProgramManager->GetProgram(m_userEventStream.GetCurrentScreen().isPerspective() ?
+          state.GetProgram3d<gpu::Program>() : state.GetProgram<gpu::Program>());
+
+  program->Bind();
+  bucket->GetBuffer()->Build(m_context, program);
 }
 
 void FrontendRenderer::RenderSingleGroup(ref_ptr<dp::GraphicsContext> context,
@@ -1939,8 +1958,7 @@ void FrontendRenderer::RefreshBgColor()
 {
   auto const scale = std::min(df::GetDrawTileScale(m_userEventStream.GetCurrentScreen()),
                               scales::GetUpperStyleScale());
-  auto const color = drule::rules().GetBgColor(scale);
-  auto const c = dp::Extract(color, 255);
+  auto const c = dp::Color(drule::rules().GetBgColor(scale), 255);
 
   CHECK(m_context != nullptr, ());
   m_context->SetClearColor(c);
@@ -1997,6 +2015,14 @@ void FrontendRenderer::OnTap(m2::PointD const & pt, bool isLongTap)
 
   m2::PointD const pxPoint2d = screen.P3dtoP(pt);
   m2::PointD mercator = screen.PtoG(pxPoint2d);
+
+  // Long tap should show/hide the interface. There is no need to detect tapped features.
+  if (isLongTap)
+  {
+    m_tapEventInfoHandler({mercator, isLongTap, isMyPosition, FeatureID(), kml::kInvalidMarkId});
+    return;
+  }
+
   if (m_myPositionController->IsModeHasPosition())
   {
     m2::PointD const pixelPos = screen.PtoP3d(screen.GtoP(m_myPositionController->Position()));
@@ -2050,6 +2076,8 @@ bool FrontendRenderer::OnSingleTouchFiltrate(m2::PointD const & pt, TouchEvent::
     return false;
   case TouchEvent::ETouchType::TOUCH_MOVE:
     return false;
+  case TouchEvent::ETouchType::TOUCH_NONE:
+    UNREACHABLE();
   }
 
   return false;
@@ -2075,6 +2103,11 @@ void FrontendRenderer::OnScaleStarted()
 void FrontendRenderer::OnRotated()
 {
   m_myPositionController->Rotated();
+}
+
+void FrontendRenderer::OnScrolled(m2::PointD const & distance)
+{
+  m_myPositionController->Scrolled(distance);
 }
 
 void FrontendRenderer::CorrectScalePoint(m2::PointD & pt) const
@@ -2274,6 +2307,9 @@ void FrontendRenderer::OnContextDestroy()
 {
   LOG(LINFO, ("On context destroy."));
 
+  if (m_renderInjectionHandler)
+    m_renderInjectionHandler(m_context, m_texMng, make_ref(m_gpuProgramManager), true);
+
   // Clear all graphics.
   for (RenderLayer & layer : m_layers)
   {
@@ -2320,6 +2356,7 @@ void FrontendRenderer::OnContextDestroy()
 
 void FrontendRenderer::OnContextCreate()
 {
+  TRACE_SECTION("[drape] OnContextCreate (FrontendRenderer)");
   LOG(LINFO, ("On context create."));
 
   m_context = make_ref(m_contextFactory->GetDrawContext());
@@ -2485,11 +2522,6 @@ void FrontendRenderer::PositionChanged(m2::PointD const & position, bool hasPosi
   m_userPositionChangedHandler(position, hasPosition);
 }
 
-void FrontendRenderer::PositionPendingTimeout()
-{
-  m_userPositionPendingTimeoutHandler();
-}
-
 void FrontendRenderer::ChangeModelView(m2::PointD const & center, int zoomLevel,
                                        TAnimationCreator const & parallelAnimCreator)
 {
@@ -2531,9 +2563,12 @@ void FrontendRenderer::OnEnterBackground()
   m_myPositionController->OnEnterBackground();
 }
 
-ScreenBase const & FrontendRenderer::ProcessEvents(bool & modelViewChanged, bool & viewportChanged)
+ScreenBase const & FrontendRenderer::ProcessEvents(bool & modelViewChanged, bool & viewportChanged, 
+                                                   bool & needActiveFrame)
 {
-  ScreenBase const & modelView = m_userEventStream.ProcessEvents(modelViewChanged, viewportChanged);
+  TRACE_SECTION("[drape] ProcessEvents");
+  ScreenBase const & modelView = m_userEventStream.ProcessEvents(modelViewChanged, viewportChanged, 
+                                                                 needActiveFrame);
   gui::DrapeGui::Instance().SetInUserAction(m_userEventStream.IsInUserAction());
 
   // Location- or compass-update could have changed model view on the previous frame.
@@ -2546,6 +2581,7 @@ ScreenBase const & FrontendRenderer::ProcessEvents(bool & modelViewChanged, bool
 
 void FrontendRenderer::PrepareScene(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] PrepareScene");
   RefreshZScale(modelView);
   RefreshPivotTransform(modelView);
 
@@ -2555,6 +2591,7 @@ void FrontendRenderer::PrepareScene(ScreenBase const & modelView)
 
 void FrontendRenderer::UpdateScene(ScreenBase const & modelView)
 {
+  TRACE_SECTION("[drape] UpdateScene");
   ResolveZoomLevel(modelView);
 
   m_gpsTrackRenderer->Update();
@@ -2564,7 +2601,7 @@ void FrontendRenderer::UpdateScene(ScreenBase const & modelView)
     uint32_t const kMaxGenerationRange = 5;
     TileKey const & key = group->GetTileKey();
 
-    return (group->IsOverlay() && key.m_zoomLevel > GetCurrentZoom()) ||
+    return (GetDepthLayer(group->GetState()) == DepthLayer::OverlayLayer && key.m_zoomLevel > GetCurrentZoom()) ||
            (m_maxGeneration - key.m_generation > kMaxGenerationRange) ||
            (group->IsUserMark() &&
             (m_maxUserMarksGeneration - key.m_userMarksGeneration > kMaxGenerationRange));
@@ -2592,7 +2629,7 @@ void FrontendRenderer::EmitModelViewChanged(ScreenBase const & modelView) const
   m_modelViewChangedHandler(modelView);
 }
 
-#if defined(OMIM_OS_MAC) || defined(OMIM_OS_LINUX)
+#if defined(OMIM_OS_DESKTOP)
 void FrontendRenderer::EmitGraphicsReady()
 {
   if (m_graphicsStage == GraphicsStage::Rendered)

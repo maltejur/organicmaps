@@ -2,21 +2,11 @@
 
 #include "routing/data_source.hpp"
 #include "routing/nearest_edge_finder.hpp"
-#include "routing/route.hpp"
 #include "routing/routing_helpers.hpp"
 
 #include "routing_common/vehicle_model.hpp"
 
-#include "indexer/classificator.hpp"
-#include "indexer/ftypes_matcher.hpp"
-#include "indexer/scales.hpp"
-
 #include "coding/point_coding.hpp"
-
-#include "geometry/distance_on_sphere.hpp"
-
-#include "base/logging.hpp"
-#include "base/macros.hpp"
 
 #include <limits>
 
@@ -44,12 +34,12 @@ FeaturesRoadGraphBase::CrossCountryVehicleModel::CrossCountryVehicleModel(Vehicl
 
 SpeedKMpH FeaturesRoadGraphBase::CrossCountryVehicleModel::GetSpeed(FeatureType & f, SpeedParams const & speedParams) const
 {
-  return GetVehicleModel(f.GetID())->GetSpeed(f, speedParams);
+  return GetVehicleModel(f.GetID())->GetSpeed(FeatureTypes(f), speedParams);
 }
 
 std::optional<HighwayType> FeaturesRoadGraphBase::CrossCountryVehicleModel::GetHighwayType(FeatureType & f) const
 {
-  return GetVehicleModel(f.GetID())->GetHighwayType(f);
+  return GetVehicleModel(f.GetID())->GetHighwayType(FeatureTypes(f));
 }
 
 SpeedKMpH const & FeaturesRoadGraphBase::CrossCountryVehicleModel::GetOffroadSpeed() const
@@ -59,17 +49,17 @@ SpeedKMpH const & FeaturesRoadGraphBase::CrossCountryVehicleModel::GetOffroadSpe
 
 bool FeaturesRoadGraphBase::CrossCountryVehicleModel::IsOneWay(FeatureType & f) const
 {
-  return GetVehicleModel(f.GetID())->IsOneWay(f);
+  return GetVehicleModel(f.GetID())->IsOneWay(FeatureTypes(f));
 }
 
 bool FeaturesRoadGraphBase::CrossCountryVehicleModel::IsRoad(FeatureType & f) const
 {
-  return GetVehicleModel(f.GetID())->IsRoad(f);
+  return GetVehicleModel(f.GetID())->IsRoad(FeatureTypes(f));
 }
 
 bool FeaturesRoadGraphBase::CrossCountryVehicleModel::IsPassThroughAllowed(FeatureType & f) const
 {
-  return GetVehicleModel(f.GetID())->IsPassThroughAllowed(f);
+  return GetVehicleModel(f.GetID())->IsPassThroughAllowed(FeatureTypes(f));
 }
 
 VehicleModelInterface * FeaturesRoadGraphBase::CrossCountryVehicleModel::GetVehicleModel(FeatureID const & featureId) const
@@ -83,7 +73,7 @@ VehicleModelInterface * FeaturesRoadGraphBase::CrossCountryVehicleModel::GetVehi
   ASSERT(vehicleModel, ());
   ASSERT_EQUAL(m_maxSpeed, vehicleModel->GetMaxWeightSpeed(), ());
 
-  itr = m_cache.emplace(featureId.m_mwmId, move(vehicleModel)).first;
+  itr = m_cache.emplace(featureId.m_mwmId, std::move(vehicleModel)).first;
   return itr->second.get();
 }
 
@@ -265,7 +255,11 @@ void FeaturesRoadGraphBase::ExtractRoadInfo(FeatureID const & featureId, Feature
 
   ri.m_junctions.resize(pointsCount);
   for (size_t i = 0; i < pointsCount; ++i)
-    ri.m_junctions[i] = { ft.GetPoint(i), altitudes[i] };
+  {
+    auto & pt = ri.m_junctions[i];
+    pt.SetPoint(ft.GetPoint(i));
+    pt.SetAltitude(altitudes[i]);
+  }
 }
 
 IRoadGraph::RoadInfo const & FeaturesRoadGraphBase::GetCachedRoadInfo(

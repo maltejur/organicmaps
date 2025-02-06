@@ -25,6 +25,11 @@
 #include <utility>
 #include <vector>
 
+namespace storage_tests
+{
+struct UnitClass_StorageTest_DeleteCountry;
+}  // storage_tests
+
 namespace storage
 {
 struct CountryIdAndName
@@ -348,7 +353,7 @@ public:
   /// \brief Fills |nodes| with CountryIds of topmost nodes for this |countryId|.
   /// \param level is distance from top level except root.
   /// For disputed territories all possible owners will be added.
-  /// Puts |countryId| to |nodes| when |level| is greater than the level of |countyId|.
+  /// Puts |countryId| to |nodes| when |level| is greater than the level of |countryId|.
   void GetTopmostNodesFor(CountryId const & countryId, CountriesVec & nodes,
                           size_t level = 0) const;
 
@@ -372,6 +377,9 @@ public:
 
   /// \brief Returns true if the last version of countryId has been downloaded.
   bool HasLatestVersion(CountryId const & countryId) const;
+
+  /// \brief Returns true if the version of countryId can be used to update maps.
+  bool IsAllowedToEditVersion(CountryId const & countryId) const;
 
   /// Returns version of downloaded mwm or zero.
   int64_t GetVersion(CountryId const & countryId) const;
@@ -575,14 +583,15 @@ public:
 
   std::string GetFilePath(CountryId const & countryId, MapFileType file) const;
 
+  void RestoreDownloadQueue();
+
 protected:
   void OnFinishDownloading();
 
 private:
-  friend struct UnitClass_StorageTest_DeleteCountry;
+  friend struct storage_tests::UnitClass_StorageTest_DeleteCountry;
 
   void SaveDownloadQueue();
-  void RestoreDownloadQueue();
 
   // Returns true when country is in the downloader's queue.
   bool IsCountryInQueue(CountryId const & countryId) const;
@@ -634,8 +643,7 @@ private:
   downloader::Progress CalculateProgress(CountriesVec const & descendants) const;
 
   template <class ToDo>
-  void ForEachAncestorExceptForTheRoot(std::vector<CountryTree::Node const *> const & nodes,
-                                       ToDo && toDo) const;
+  void ForEachAncestorExceptForTheRoot(CountryTree::NodesBufferT const & nodes, ToDo && toDo) const;
 
   /// @return true if |node.Value().Name()| is a disputed territory and false otherwise.
   bool IsDisputed(CountryTree::Node const & node) const;
@@ -685,7 +693,7 @@ void Storage::ForEachInSubtree(CountryId const & root, ToDo && toDo) const
 template <class ToDo>
 void Storage::ForEachAncestorExceptForTheRoot(CountryId const & countryId, ToDo && toDo) const
 {
-  std::vector<CountryTree::Node const *> nodes;
+  CountryTree::NodesBufferT nodes;
   m_countries.Find(countryId, nodes);
   if (nodes.empty())
   {
@@ -697,8 +705,7 @@ void Storage::ForEachAncestorExceptForTheRoot(CountryId const & countryId, ToDo 
 }
 
 template <class ToDo>
-void Storage::ForEachAncestorExceptForTheRoot(std::vector<CountryTree::Node const *> const & nodes,
-                                              ToDo && toDo) const
+void Storage::ForEachAncestorExceptForTheRoot(CountryTree::NodesBufferT const & nodes, ToDo && toDo) const
 {
   std::set<CountryTree::Node const *> visitedAncestors;
   // In most cases nodes.size() == 1. In case of disputable territories nodes.size()

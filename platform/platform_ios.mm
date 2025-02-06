@@ -7,6 +7,8 @@
 
 #include "coding/file_reader.hpp"
 
+#include "std/target_os.hpp"
+
 #include <utility>
 
 #include <ifaddrs.h>
@@ -21,7 +23,6 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/xattr.h>
-
 
 #import <CoreFoundation/CFURL.h>
 #import <SystemConfiguration/SystemConfiguration.h>
@@ -63,8 +64,9 @@ Platform::Platform()
   UIDevice * device = UIDevice.currentDevice;
   device.batteryMonitoringEnabled = YES;
 
-  NSLog(@"Device: %@, SystemName: %@, SystemVersion: %@", device.model, device.systemName,
-        device.systemVersion);
+  LOG(LINFO, ("Device:", device.model.UTF8String, "SystemName:",
+              device.systemName.UTF8String, "SystemVersion:",
+              device.systemVersion.UTF8String));
 }
 
 //static
@@ -119,6 +121,7 @@ std::unique_ptr<ModelReader> Platform::GetReader(std::string const & file, std::
 }
 
 int Platform::VideoMemoryLimit() const { return 8 * 1024 * 1024; }
+
 int Platform::PreCachingDepth() const { return 2; }
 
 std::string Platform::GetMemoryInfo() const
@@ -159,8 +162,11 @@ std::string Platform::DeviceModel() const
 
 std::string Platform::Version() const
 {
-  NSString * version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-  return version.UTF8String;
+  /// @note Do not change version format, it is parsed on server side.
+  NSBundle * mainBundle = [NSBundle mainBundle];
+  NSString * version = [mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+  NSString * build = [mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"];
+  return std::string{version.UTF8String} + '-' + build.UTF8String + '-' + OMIM_OS_NAME;
 }
 
 int32_t Platform::IntVersion() const
@@ -243,6 +249,24 @@ void Platform::SetupMeasurementSystem() const
 
 void Platform::GetSystemFontNames(FilesList & res) const
 {
+}
+
+// static
+time_t Platform::GetFileCreationTime(std::string const & path)
+{
+  struct stat st;
+  if (0 == stat(path.c_str(), &st))
+    return st.st_birthtimespec.tv_sec;
+  return 0;
+}
+
+// static
+time_t Platform::GetFileModificationTime(std::string const & path)
+{
+  struct stat st;
+  if (0 == stat(path.c_str(), &st))
+    return st.st_mtimespec.tv_sec;
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////

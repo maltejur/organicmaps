@@ -6,14 +6,9 @@
 
 #include "shaders/programs.hpp"
 
-#include "drape/drape_diagnostics.hpp"
-#include "drape/glsl_func.hpp"
 #include "drape/vertex_array_buffer.hpp"
 
 #include "indexer/map_style_reader.hpp"
-#include "indexer/scales.hpp"
-
-#include "base/logging.hpp"
 
 #include <algorithm>
 #include <array>
@@ -49,16 +44,6 @@ uint8_t const kMaxNightAlpha = 102;
 double const kUnknownDistanceTime = 5 * 60; // seconds
 
 double const kDistanceScalar = 0.4;
-
-float CalculateRadius(ScreenBase const & screen)
-{
-  double zoom = 0.0;
-  int index = 0;
-  float lerpCoef = 0.0f;
-  ExtractZoomFactors(screen, zoom, index, lerpCoef);
-  float const radius = InterpolateByZoomLevels(index, lerpCoef, kRadiusInPixel);
-  return radius * static_cast<float>(VisualParams::Instance().GetVisualScale());
-}
 
 #ifdef DEBUG
 bool GpsPointsSortPredicate(GpsTrackPoint const & pt1, GpsTrackPoint const & pt2)
@@ -129,7 +114,7 @@ void GpsTrackRenderer::UpdatePoints(std::vector<GpsTrackPoint> const & toAdd,
       m_pointsSpline.AddPoint(m_points[i].m_point);
   }
 
-  m_needUpdate = true;
+  m_needUpdate = wasChanged;
 }
 
 size_t GpsTrackRenderer::GetAvailablePointsCount() const
@@ -154,7 +139,7 @@ dp::Color GpsTrackRenderer::CalculatePointColor(size_t pointIndex, m2::PointD co
   double startAlpha = kMinDayAlpha;
   double endAlpha = kMaxDayAlpha;
   auto const style = GetStyleReader().GetCurrentStyle();
-  if (style == MapStyle::MapStyleDark)
+  if (style == MapStyle::MapStyleDefaultDark)
   {
     startAlpha = kMinNightAlpha;
     endAlpha = kMaxNightAlpha;
@@ -215,10 +200,11 @@ void GpsTrackRenderer::RenderTrack(ref_ptr<dp::GraphicsContext> context, ref_ptr
     if (m_waitForRenderData)
       return;
 
-    m_radius = CalculateRadius(screen);
+    m_radius = CalculateRadius(screen, kRadiusInPixel);
     double const currentScaleGtoP = 1.0 / screen.GetScale();
     double const radiusMercator = m_radius / currentScaleGtoP;
     double const diameterMercator = 2.0 * radiusMercator;
+    double const step = diameterMercator + kDistanceScalar * diameterMercator;
 
     // Update points' positions and colors.
     ASSERT(!m_renderData.empty(), ());
@@ -246,6 +232,8 @@ void GpsTrackRenderer::RenderTrack(ref_ptr<dp::GraphicsContext> context, ref_ptr
     {
       m2::Spline::iterator it;
       it.Attach(m_pointsSpline);
+      auto const fullLength = it.GetFullLength();
+      double lengthFromStart = 0.0;
       while (!it.BeginAgain())
       {
         m2::PointD const pt = it.m_pos;
@@ -253,8 +241,7 @@ void GpsTrackRenderer::RenderTrack(ref_ptr<dp::GraphicsContext> context, ref_ptr
                             pt.x + radiusMercator, pt.y + radiusMercator);
         if (screen.ClipRect().IsIntersect(pointRect))
         {
-          dp::Color const color = CalculatePointColor(it.GetIndex(), pt,
-                                                      it.GetLength(), it.GetFullLength());
+          dp::Color const color = CalculatePointColor(it.GetIndex(), pt, lengthFromStart, fullLength);
           m2::PointD const convertedPt = MapShape::ConvertToLocal(pt, m_pivot, kShapeCoordScalar);
           m_handlesCache[cacheIndex].first->SetPoint(m_handlesCache[cacheIndex].second,
                                                      convertedPt, m_radius, color);
@@ -269,7 +256,8 @@ void GpsTrackRenderer::RenderTrack(ref_ptr<dp::GraphicsContext> context, ref_ptr
             return;
           }
         }
-        it.Advance(diameterMercator + kDistanceScalar * diameterMercator);
+        lengthFromStart += step;
+        it.Advance(step);
       }
 
 #ifdef GPS_TRACK_SHOW_RAW_POINTS
@@ -327,6 +315,6 @@ void GpsTrackRenderer::Update()
 void GpsTrackRenderer::Clear()
 {
   m_points.clear();
-  m_needUpdate = true;
+  ClearRenderData();
 }
 }  // namespace df

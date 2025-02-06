@@ -49,15 +49,7 @@ public:
     bool m_viewportSearch = false;
     bool m_categorialRequest = false;
 
-    std::string m_query;
-    QueryTokens m_tokens;
-    // Prefix of the last token in the query.
-    // We need it here to make suggestions.
-    strings::UniString m_prefix;
-
-    // Minimal distance between search results in meters, needed for
-    // filtering of identical search results.
-    double m_minDistanceBetweenResultsM = 100.0;
+    QueryString m_query;
 
     Locales m_categoryLocales;
 
@@ -84,7 +76,7 @@ public:
   // Makes the final result that is shown to the user from a ranker's result.
   // |needAddress| and |needHighlighting| enable filling of optional fields
   // that may take a considerable amount of time to compute.
-  Result MakeResult(RankerResult rankerResult, bool needAddress, bool needHighlighting) const;
+  Result MakeResult(RankerResult const & rankerResult, bool needAddress, bool needHighlighting) const;
 
   void SuggestStrings();
 

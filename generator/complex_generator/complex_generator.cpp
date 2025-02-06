@@ -12,8 +12,7 @@
 //
 // $ python -m maps_generator --skip="coastline" --countries="Russia_Moscow"
 //
-// $ ./complex_generator --maps_build_path=path/to/maps_build \
-//   --user_resource_path=path/to/omim/data --output=output.txt
+// $ ./complex_generator --maps_build_path=path/to/maps_build --user_resource_path=path/to/omim/data --output=output.txt
 
 #include "generator/filter_complex.hpp"
 #include "generator/filter_interface.hpp"
@@ -44,7 +43,7 @@
 
 #include "defines.hpp"
 
-#include "gflags/gflags.h"
+#include <gflags/gflags.h>
 
 DEFINE_string(node_storage, "map",
               "Type of storage for intermediate points representation. Available: raw, map, mem.");

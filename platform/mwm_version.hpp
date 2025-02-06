@@ -13,7 +13,6 @@ DECLARE_EXCEPTION(CorruptedMwmFile, RootException);
 
 namespace version
 {
-// Add new types to the corresponding list in generator/pygen/pygen.cpp.
 enum class Format
 {
   unknownFormat = -1,
@@ -43,8 +42,6 @@ public:
   uint64_t GetSecondsSinceEpoch() const { return m_secondsSinceEpoch; }
   /// \return version as YYMMDD.
   uint32_t GetVersion() const;
-
-  bool IsEditableMap() const;
 
   /// @name Used in tests only.
   /// @{
